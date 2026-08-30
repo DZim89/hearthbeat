@@ -6,7 +6,7 @@
                          manual. A manual run structurally cannot pose as scheduled.
   GET  /missioncontrol — public read-only dashboard (token-space data only).
   GET  /slip/{id}      — console approval standby path (token-gated).
-  GET  /healthz
+  GET  /health
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ async def decide_slip(slip_id: str, decision: str, request: Request) -> dict[str
     return {"slip": slip_id, "status": status, "decided_via": "console"}
 
 
-@api.get("/healthz")
+@api.get("/health")
 async def healthz() -> dict[str, str]:
     return {"ok": "true", "service": "hearthbeat"}
 

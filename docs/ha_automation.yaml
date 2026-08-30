@@ -1,0 +1,30 @@
+# The ONE additive Home Assistant automation hearthbeat needs — the approval
+# bridge. When a companion-app actionable notification button is tapped, the
+# action string (HEARTH_APPROVE_<id> / HEARTH_DENY_<id>) lands in a helper
+# entity that the house-side poller reads over REST. No webhooks, no inbound
+# exposure, trivially removable.
+#
+# Prerequisite (30 s in the UI): Settings -> Devices & Services -> Helpers ->
+# Create helper -> Text, name "hearthbeat last approval"
+# (entity id: input_text.hearthbeat_last_approval, max length 100).
+#
+# Install: Settings -> Automations -> Create -> Edit in YAML -> paste this.
+# Remove: delete the automation + the helper. Nothing else changes.
+
+alias: hearthbeat approval bridge
+description: >-
+  Copies the action id of a tapped hearthbeat notification button into
+  input_text.hearthbeat_last_approval for the pull-based action poller.
+mode: queued
+triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+conditions:
+  - condition: template
+    value_template: "{{ trigger.event.data.action.startswith('HEARTH_') }}"
+actions:
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.hearthbeat_last_approval
+    data:
+      value: "{{ trigger.event.data.action }}"

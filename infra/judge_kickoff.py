@@ -24,7 +24,7 @@ def wait(url: str, tries: int = 60) -> None:
 
 
 def main() -> None:
-    wait(f"{AGENT}/healthz")
+    wait(f"{AGENT}/health")
     print("[kickoff] agent healthy; giving the house 25s to mirror + ingest fixtures")
     time.sleep(25)
     r = httpx.post(f"{AGENT}/trigger", params={"red_team": 1}, timeout=600)
