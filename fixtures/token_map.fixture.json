@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "salt": "fixture-salt-not-secret",
+  "entries": [
+    {
+      "token": "[[P_DAD]]",
+      "kind": "person",
+      "aliases": ["Alex", "Alex Hartwell", "Dad"]
+    },
+    {
+      "token": "[[P_KID1]]",
+      "kind": "person",
+      "aliases": ["Riley", "Riley Hartwell"]
+    },
+    {
+      "token": "[[P_KID2]]",
+      "kind": "person",
+      "aliases": ["Jordan"]
+    },
+    {
+      "token": "[[P_GRANDMA]]",
+      "kind": "person",
+      "aliases": ["Grandma Pat", "Pat Miller"]
+    },
+    {
+      "token": "[[R_LIVING]]",
+      "kind": "room",
+      "aliases": ["the den"],
+      "entity_ids": {
+        "media_player.den_smart_tv_4k": "media_player.family_tv"
+      }
+    },
+    {
+      "token": "[[S_SCHOOL]]",
+      "kind": "place",
+      "aliases": ["Maplewood Elementary"]
+    }
+  ]
+}

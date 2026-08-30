@@ -1,0 +1,46 @@
+# hearthbeat action policy — the deterministic authority on what the agent may do.
+# Default-deny: anything not listed here is refused and lands as a denial row
+# in the ledger. Entities and person references are in TOKEN SPACE — the cloud
+# never sees real names or real entity ids (see house/scrub.py).
+
+version: 1
+timezone: America/Los_Angeles
+
+# Autonomous actions may not fire inside quiet hours unless the action type is
+# quiet_ok, or a human explicitly approved the action (a tap is consent).
+quiet_hours: { start: "21:30", end: "06:30" }
+human_approval_bypasses_quiet_hours: true
+
+daily_budget_cents: 50        # hard ceiling on model spend per day; enforced mid-run
+max_actions_per_run: 6
+
+actions:
+  media_pause:
+    ha_domain: media_player
+    ha_service: media_pause
+    allowed_entities: [media_player.family_tv]
+    quiet_ok: true            # pausing media REDUCES noise — allowed at night
+    required_args: []
+
+  calendar_create_event:
+    ha_domain: calendar
+    ha_service: create_event
+    allowed_entities: [calendar.hearthbeat_family]
+    quiet_ok: true            # silent data write
+    required_args: [title, start_iso, end_iso]
+
+  notify_family_member:
+    ha_domain: notify
+    ha_service: send
+    allowed_entities: ["[[P_GRANDMA]]", "[[P_DAD]]"]
+    sensitive_targets: ["[[P_GRANDMA]]"]   # messaging anyone but the household
+                                           # lead ALWAYS requires a permission slip
+    quiet_ok: false
+    required_args: [message]
+
+  send_briefing:
+    ha_domain: notify
+    ha_service: send
+    allowed_entities: ["[[P_DAD]]"]
+    quiet_ok: true            # lands silently on the lead's phone
+    required_args: [message]

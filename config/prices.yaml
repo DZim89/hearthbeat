@@ -1,0 +1,7 @@
+# Per-1M-token list prices (USD) used for the ledger's cost-cents accounting.
+# microcents_per_token = usd_per_1M * 100  (1 microcent = 1e-6 cent).
+# Thought tokens are billed as output. Edit here if list prices change.
+models:
+  gemini-3.5-flash:      { input_usd_per_1m: 0.30, output_usd_per_1m: 2.50 }
+  gemini-3.5-flash-lite: { input_usd_per_1m: 0.10, output_usd_per_1m: 0.40 }
+default:                 { input_usd_per_1m: 0.30, output_usd_per_1m: 2.50 }

@@ -207,3 +207,8 @@ tools/a2a-inspector/
 *.pem
 *-key.json
 credentials*.json
+
+# hearthbeat local-only
+config/token_map.local.json
+house/.env
+data/
