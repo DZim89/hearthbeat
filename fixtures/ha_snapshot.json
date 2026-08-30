@@ -1,0 +1,41 @@
+[
+  {
+    "entity_id": "media_player.den_smart_tv_4k",
+    "state": "playing",
+    "attributes": {
+      "friendly_name": "Den Smart TV",
+      "media_title": "Saturday Morning Cartoons — S02E11",
+      "media_content_type": "tvshow"
+    }
+  },
+  {
+    "entity_id": "person.alex",
+    "state": "home",
+    "attributes": { "friendly_name": "Alex" }
+  },
+  {
+    "entity_id": "person.riley",
+    "state": "home",
+    "attributes": { "friendly_name": "Riley" }
+  },
+  {
+    "entity_id": "person.jordan",
+    "state": "not_home",
+    "attributes": { "friendly_name": "Jordan" }
+  },
+  {
+    "entity_id": "sensor.home_energy_usage",
+    "state": "1.84",
+    "attributes": { "friendly_name": "Home Energy Usage", "unit_of_measurement": "kW" }
+  },
+  {
+    "entity_id": "input_text.hearthbeat_last_approval",
+    "state": "",
+    "attributes": { "friendly_name": "hearthbeat last approval" }
+  },
+  {
+    "entity_id": "calendar.hearthbeat_family",
+    "state": "on",
+    "attributes": { "friendly_name": "Family Calendar" }
+  }
+]

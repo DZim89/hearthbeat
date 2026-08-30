@@ -1,0 +1,8 @@
+{
+  "note": "Judge-mode stand-in for the local Gemma PII pass (judges have no GPU). These are the spans gemma3 finds in fixtures/school_email.eml on the real house — disclosed in the README.",
+  "spans": [
+    { "text": "Mrs. Alvarez", "kind": "name" },
+    { "text": "alvarez@maplewood-elementary.example.org", "kind": "email" },
+    { "text": "555-0142", "kind": "phone" }
+  ]
+}

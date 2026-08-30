@@ -1,0 +1,62 @@
+# Judge mode — the whole product from a clean clone, zero Google credentials:
+#
+#     SIMULATED_HOME=1 docker compose up
+#
+# then open http://localhost:8080/missioncontrol
+#
+# What runs: a real Firestore EMULATOR (the actual wire protocol — transactions,
+# create() preconditions, the pull-based action path are all real code), the
+# agent service (same image Cloud Run runs), a fake Home Assistant seeded from
+# fixtures, the three house-side processes, and a kickoff that fires the
+# pipeline via /trigger (honestly labeled trigger_source=manual — only Cloud
+# Scheduler's OIDC identity can ever produce "scheduled").
+
+services:
+  firestore:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command: gcloud emulators firestore start --host-port=0.0.0.0:8790 --project=demo-hearthbeat
+
+  agent:
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      SIMULATED_HOME: "1"
+      JUDGE_LLM: ${JUDGE_LLM:-fixture}
+      FIRESTORE_EMULATOR_HOST: firestore:8790
+      GOOGLE_CLOUD_PROJECT: demo-hearthbeat
+      LEDGER_SINK: file
+      LEDGER_FILE: /data/ledger.jsonl
+    volumes: [ "ledger:/data" ]
+    depends_on: [ firestore ]
+
+  ha-sim:
+    build: .
+    command: uv run uvicorn house.ha_sim:app --host 0.0.0.0 --port 8123
+    ports: ["8123:8123"]
+
+  house:
+    build: .
+    command: uv run python -m house.run_all
+    environment:
+      SIMULATED_HOME: "1"
+      FIRESTORE_EMULATOR_HOST: firestore:8790
+      GOOGLE_CLOUD_PROJECT: demo-hearthbeat
+      HA_URL: http://ha-sim:8123
+      LEDGER_SINK: file
+      LEDGER_FILE: /data/ledger.jsonl
+      WATCH_DIR: /data/school_inbox
+      MIRROR_SECONDS: "30"
+      POLL_SECONDS: "5"
+    volumes: [ "ledger:/data" ]
+    depends_on: [ firestore, ha-sim ]
+
+  kickoff:
+    build: .
+    command: uv run python -m infra.judge_kickoff
+    environment:
+      SIMULATED_HOME: "1"
+      AGENT_URL: http://agent:8080
+    depends_on: [ agent, house ]
+
+volumes:
+  ledger: {}

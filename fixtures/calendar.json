@@ -1,0 +1,20 @@
+[
+  {
+    "summary": "Riley — soccer practice",
+    "start": { "dateTime": "2026-08-31T17:00:00-07:00" },
+    "end": { "dateTime": "2026-08-31T18:30:00-07:00" },
+    "description": "bring cleats"
+  },
+  {
+    "summary": "Family dinner at Grandma Pat's",
+    "start": { "dateTime": "2026-08-31T17:30:00-07:00" },
+    "end": { "dateTime": "2026-08-31T19:00:00-07:00" },
+    "description": "SEEDED DEMO CONFLICT — overlaps soccer practice (disclosed in README)"
+  },
+  {
+    "summary": "Jordan — dentist",
+    "start": { "dateTime": "2026-09-01T09:00:00-07:00" },
+    "end": { "dateTime": "2026-09-01T10:00:00-07:00" },
+    "description": ""
+  }
+]
