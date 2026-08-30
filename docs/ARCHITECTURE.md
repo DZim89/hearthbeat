@@ -48,8 +48,8 @@ flowchart LR
 
     SCRUB -->|"tokens only ⬆"| FS
     FS -->|"house PULLS pending_actions"| POLLER
-    style HOUSE fill:#1a2b1e,stroke:#4a7c59
-    style GCP fill:#1a2333,stroke:#4a6a8c
+    style HOUSE fill:#e9f5ec,stroke:#4a7c59,stroke-width:2px
+    style GCP fill:#e8f0fb,stroke:#4a6a8c,stroke-width:2px
 ```
 
 ## The five design commitments
