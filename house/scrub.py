@@ -147,17 +147,30 @@ def _hash(salt: str, phrase: str) -> str:
     return hashlib.sha256((salt + phrase.strip().lower()).encode("utf-8")).hexdigest()
 
 
+# Generic words that may appear inside a person alias ("Grandma Pat") but are
+# not identifying on their own — hashing them would false-positive everywhere.
+_PER_WORD_STOPWORDS = {
+    "the", "dad", "mom", "mama", "papa", "grandma", "grandpa", "nana", "aunt",
+    "uncle", "mrs", "mr", "miss", "coach", "baby", "kiddo",
+}
+
+
 def salted_alias_hashes(tmap: TokenMap) -> list[str]:
-    """Hashes the cloud egress guard compares against. One per alias, plus one per
-    word of multi-word aliases (so a leaked bare surname still trips the wire)."""
+    """Hashes the cloud egress guard compares against. One per full alias; for
+    PERSON aliases additionally one per name-word (>=4 chars, minus generic
+    family words) so a leaked bare surname still trips the wire without turning
+    common English words into alarms."""
     out: set[str] = set()
-    for alias, _token in tmap.aliases():
-        out.add(_hash(tmap.salt, alias))
-        words = alias.split()
-        if len(words) > 1:
-            for w in words:
-                if len(w) >= 3:
-                    out.add(_hash(tmap.salt, w))
+    for entry in tmap.entries:
+        for alias in entry.aliases:
+            if not alias.strip():
+                continue
+            out.add(_hash(tmap.salt, alias))
+            words = alias.split()
+            if entry.kind == "person" and len(words) > 1:
+                for w in words:
+                    if len(w) >= 4 and w.lower() not in _PER_WORD_STOPWORDS:
+                        out.add(_hash(tmap.salt, w))
     return sorted(out)
 
 
@@ -167,6 +180,7 @@ def scan_hashed(text: str, salt: str, alias_hashes: set[str], max_ngram: int = 3
     The cloud holds only hashes — it can detect a leak without learning the alias.
     Returns the number of matches (0 == provably clean w.r.t. the map).
     """
+    text = TOKEN_RE.sub(" ", text)  # [[P_DAD]] is the SAFE form — never scan tokens
     words = re.findall(r"[A-Za-z][A-Za-z'’-]*", text)
     lowered = [w.lower() for w in words]
     matches = 0

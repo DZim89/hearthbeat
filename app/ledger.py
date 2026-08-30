@@ -118,7 +118,9 @@ class LedgerPlugin(BasePlugin):
             h for h in os.environ.get("EGRESS_ALIAS_HASHES", "").split(",") if h
         }
         self.record_dir = (
-            Path("fixtures/llm") if os.environ.get("RECORD_LLM") == "1" else None
+            Path(os.environ.get("LLM_FIXTURES_DIR", "fixtures/llm"))
+            if os.environ.get("RECORD_LLM") == "1"
+            else None
         )
         self._record_counters: dict[str, int] = defaultdict(int)
         self.egress_checks = 0
