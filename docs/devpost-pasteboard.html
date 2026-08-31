@@ -153,6 +153,8 @@ Windows PowerShell:
 $env:SIMULATED_HOME='1'
 docker compose up
 
+Observed validation timing: two fresh-clone, no-cache runs on the submission Windows/WSL/Docker host reached successful kickoff in 184.487 seconds and 194.845 seconds. These are host observations, not a cross-machine SLA; cached starts can be faster.
+
 When ready, open http://localhost:8080/missioncontrol. The fixture run starts automatically. Verify the gathered -> planned -> reviewed -> dispatched stages, the calendar action, the permission-gated message labeled judge_auto, the planted front_door_unlock denial, and the run-scoped protected-alias result.
 
 All people, messages, schedules, and home state are disclosed fictional fixtures. Recorded model responses make this path deterministic; no Google account, API key, or real-home access is needed.</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="testingInstructions">Copy testing instructions</button><button data-select="testingInstructions">Select all</button></div></div>
@@ -267,14 +269,15 @@ There is no chat window and no prompt to remember. Hearthbeat can create a
 permitted calendar proposal and deliver the household briefing autonomously.
 If a proposed action requires a human decision—such as releasing a drafted
 person-to-person message—it stops at an Approve/Deny permission slip on a real
-phone. A planted front-door action takes the third path: deterministic policy
-refuses it and records the denial as evidence.
+phone. In disclosed fixture judge mode, a planted front-door action takes the
+third path: deterministic policy refuses it and records the denial as evidence.
 
 Mission Control is a read-only, run-scoped view of what happened: each stage,
-action, approval state, model ID, trigger provenance, estimated list-rate model
-cost, and protected-alias scan result. Most agents only answer. Hearthbeat has
-three outcomes—act, ask, or refuse—and Mission Control shows which path it
-took. The result is less remembering, less nagging, and fewer rushed surprises.
+action, approval state, trigger provenance, estimated list-rate model cost,
+and protected-alias scan result. Model-usage events are preserved in the run's
+BigQuery evidence. Most agents only answer. Hearthbeat has three outcomes—act,
+ask, or refuse—and Mission Control shows which action path it took. The result
+is less remembering, less nagging, and fewer rushed surprises.
 
 ## How we built it
 

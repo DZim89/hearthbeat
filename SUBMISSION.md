@@ -46,8 +46,11 @@ one command.” The
 credential-free path uses disclosed fixtures, the Firestore emulator, recorded
 model responses, and a simulated home. Run `SIMULATED_HOME=1 docker compose
 up`, then open `http://localhost:8080/missioncontrol`. The hosted Mission
-Control URL is public and read-only; no credentials are required. The live
-cloud evidence uses run ID `2026-08-31`.
+Control URL is public and read-only; no credentials are required. Two
+fresh-clone, no-cache validations on the submission host reached successful
+judge-mode kickoff in 184.487 s and 194.845 s. These are observed
+Windows/WSL/Docker timings, not a cross-machine SLA. The live cloud evidence
+uses run ID `2026-08-31`.
 
 ## Text description (long form)
 
@@ -84,14 +87,15 @@ There is no chat window and no prompt to remember. Hearthbeat can create a
 permitted calendar proposal and deliver the household briefing autonomously.
 If a proposed action requires a human decision—such as releasing a drafted
 person-to-person message—it stops at an Approve/Deny permission slip on a real
-phone. A planted front-door action takes the third path: deterministic policy
-refuses it and records the denial as evidence.
+phone. In disclosed fixture judge mode, a planted front-door action takes the
+third path: deterministic policy refuses it and records the denial as evidence.
 
 Mission Control is a read-only, run-scoped view of what happened: each stage,
-action, approval state, model ID, trigger provenance, estimated list-rate model
-cost, and protected-alias scan result. Most agents only answer. Hearthbeat has
-three outcomes—act, ask, or refuse—and Mission Control shows which path it
-took. The result is less remembering, less nagging, and fewer rushed surprises.
+action, approval state, trigger provenance, estimated list-rate model cost,
+and protected-alias scan result. Model-usage events are preserved in the run's
+BigQuery evidence. Most agents only answer. Hearthbeat has three outcomes—act,
+ask, or refuse—and Mission Control shows which action path it took. The result
+is less remembering, less nagging, and fewer rushed surprises.
 
 ## How we built it
 

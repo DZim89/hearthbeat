@@ -1,120 +1,131 @@
-# hearthbeat — 3:45 video script (hard ceiling 4:00)
+# Hearthbeat — final 3:20 video script (hard ceiling 4:00)
 
-Structure: an **edited montage** with ONE clearly labeled uninterrupted live
-segment. On-screen labels keep it honest: the uncut core carries a "LIVE —
-UNCUT" badge with the run id; every other beat is a labeled "PICKUP" tied to
-the same run id (or explicitly to the judge-mode run). Captions burned-in AND
-uploaded as .srt.
+This is an edited montage with one clearly labeled, uninterrupted live
+segment. The fixed live segment is 85 seconds at 1× speed from one continuous
+source interval; it has no temporal edits, transitions, freezes, or internal
+cuts. Every other beat is labeled as a pickup.
+
+The visual spine is **ACT · ASK · REFUSE**:
+
+- **Act:** the calendar event and morning briefing complete in the authentic
+  scheduled run.
+- **Ask:** the personal notification remains permission-gated.
+- **Refuse:** disclosed local judge mode rejects a planted forbidden action.
 
 ## Exact edit clock
 
-| Time | Length | Beat |
-|---|---:|---|
-| 0:00–0:12 | 12s | Result-first hook: completed morning plan + proposed calendar event |
-| 0:12–0:28 | 16s | Personal friction + “no chat” promise |
-| 0:28–2:05 | 97s target | **LIVE — UNCUT** scheduled execution; no internal edits |
-| 2:05–2:38 | 33s | Permission boundary + planted forbidden-action denial |
-| 2:38–3:12 | 34s | Architecture + visible Google Cloud / ADK / Gemini proof |
-| 3:12–3:38 | 26s | Clean-clone judge mode + run-scoped cost/privacy evidence |
-| 3:38–3:45 | 7s | Close and public URLs |
+| Final time | Length | Source and visible content | Required label |
+|---|---:|---|---|
+| 0:00–0:15 | 15s | New result-first pickup: clean completed action rows, calendar result, and Hearthbeat title. Do not show the briefing body. | `PICKUP · RESULT · RUN 2026-08-31` |
+| 0:15–0:30 | 15s | New personal-friction/no-chat pickup: quiet-house, calendar, or clean title imagery. | `PICKUP · CONTEXT` |
+| 0:30–1:55 | 85s | `live-core-uncut.mp4` exactly as prepared: one constant crop, 1× speed, no temporal edits. | `LIVE · UNCUT · 1× · RUN 2026-08-31 · SCHEDULED` throughout |
+| 1:55–2:07 | 12s | `run-evidence-pickup.mp4`: 11 calls, zero configured protected-alias matches, 4.9906¢, run ID. | `PICKUP · RUN EVIDENCE · 2026-08-31` |
+| 2:07–2:27 | 20s | New permission pickup: awaiting-approval state and, only if public-safe and available, the controlled approval plus household-channel result. | `PICKUP · SAME RUN · HUMAN APPROVAL · RECORDED AFTER LIVE RUN` |
+| 2:27–3:01 | 34s | `architecture-pickup-final.mp4`. | `PICKUP · ARCHITECTURE` |
+| 3:01–3:13 | 12s | New judge-mode pickup: one-command invocation and local denial result. | `PICKUP · JUDGE MODE · LOCAL EMULATOR · MANUAL` |
+| 3:13–3:20 | 7s | `closing-card-final.mp4`. | Existing final card |
 
-## The uncut core (one continuous take, target 97s of the final video)
+## Exact voiceover
 
-**"LIVE — UNCUT · run 2026-08-31 · scheduled"** on screen throughout.
-Continuous screen/camera capture, no cuts:
+### 0:00–0:15 — result first
 
-1. GCP console, Cloud Scheduler page, clock visible → `hearth-morning` fires.
-2. Terminal alongside: Cloud Run logs stream; the run doc's
-   `triggered_by: sa-home@new-prompt-490003.iam.gserviceaccount.com` shown —
-   **authenticated as the configured OIDC invoker principal**.
-3. Mission Control refreshes: stages light up gathered → planned → reviewed →
-   dispatched; badge reads **scheduled** (green).
-4. The autonomous consequences inside the same take: the proposed calendar
-   event appears and the morning briefing lands on the phone. Show the TV pause
-   only if the fixture/device is actually playing when the run fires.
+> With four kids and two working parents, one buried school email can turn
+> breakfast into a scramble. Hearthbeat wakes before us, builds the morning
+> plan, and acts only within permission.
 
-VO over the core: "This is a real Cloud Scheduler cron firing, on camera, in
-one take. The run authenticates as the configured OIDC invoker principal,
-Scheduler's run history corroborates the cron origin, and any
-manual run — or manual resume — carries its own label. Watch the pipeline
-argue with itself, dispatch, and the house quietly act."
+### 0:15–0:30 — no-chat promise
 
-## Labeled pickups (each badged "PICKUP · run 2026-08-31" unless noted)
+> There is no chat window and no prompt to remember. At 6:45, the agent starts
+> itself, turns scattered school and calendar facts into action, asks when
+> needed, and refuses what is not allowed.
 
-| # | Beat | On screen | VO essence |
-|---|------|-----------|------------|
-| P1 | Cold open (before the core) | Quiet house b-roll; Mission Control ticking | "No chat window. The house runs its own morning standup." |
-| P2 | Architecture | Diagram sweep: gatherers → planner → policy loop → dispatcher; house/cloud wall, pull arrow | ADK primitives named; "the cloud never reaches in — the house pulls." |
-| P3 | Permission slip beside autonomous calendar action | Show the HA calendar event already present → phone close-up: Approve/Deny → tap Approve → notification shows the **approved draft released to the household channel** | "The calendar proposal landed autonomously; one tap releases the approved draft to the household notification channel — it never contacts the recipient directly." |
-| P4 | Red team | `/trigger?red_team=1` (labeled manual) → denial rows: `unlisted_action_type:front_door_unlock` on Mission Control + BQ `denials_v` | "Planted forbidden action, refused in writing. Denials are data." |
-| P5 | Gemma / privacy | `ollama ps`; raw email → tokenized side-by-side; BQ: zero protected-alias matches for the filmed run; historical `egress_block` rows shown separately and explained | "On this filmed path, configured family aliases are tokenized locally; a local Gemma/Qwen tier scans additional PII; and instrumented Gemini requests are checked against the configured protected-alias hashes. This run shows zero matches. Historical blocked rows are shown separately as caught build failures." |
-| P6 | Console proof + judge mode (judge-mode run id shown) | Cloud Run service (sa-home), Scheduler SUCCESS history; `git clone` → `SIMULATED_HOME=1 docker compose up` → localhost Mission Control | "Live on Cloud Run, with a run-scoped list-rate cost estimate recorded in BigQuery — and judges get the whole house with one command from a clean clone." |
-| P7 | Close | Thumbnail card → URLs | "Hearthbeat: less remembering, less nagging, and fewer rushed surprises." |
+### 0:30–1:55 — uninterrupted live core
 
-## Tight narration spine
+> This is the real 6:45 run at normal speed, shown in one continuous take.
+> Cloud Scheduler fires the service. The request authenticates as Hearthbeat’s
+> configured OIDC invoker principal, and Scheduler history plus timing
+> corroborate the cron origin. Four ADK gatherers collect tokenized home,
+> calendar, and school-mail context. Gemini produces a structured plan. A
+> LoopAgent critic and deterministic default-deny policy review the exact
+> revision before dispatch. The dispatcher writes content-hash action
+> documents and reuses them under the tested retry path. Mission Control is
+> scoped to run 2026-08-31. Gathered, planned, reviewed, dispatched—every stage
+> completes. The permitted calendar event and morning briefing finish
+> autonomously. The proposed family notification does not. It stops at
+> awaiting approval, because a model can suggest a personal action, but it
+> cannot grant itself authority. That is Hearthbeat’s trust boundary: routine
+> coordination happens quietly, while I keep the consequential decision.
 
-Use this as the spoken spine; pause naturally over the live state changes and
-do not race the visuals.
+Read this naturally and leave quiet space for stage transitions. Do not speed
+up the live core or the narration to fill silence.
 
-**0:00–0:28 — hook and friction**
+### 1:55–2:07 — run evidence
 
-> I built Hearthbeat after mornings when school email got buried, an
-> after-school change surfaced only at drop-off, and the kids were stressed
-> before we left. By breakfast, Hearthbeat has already turned school email and
-> calendars into a safe plan and a proposed calendar fix. There is no chat
-> window and no prompt to remember. The house runs its own morning standup.
+> For this filmed run, the egress guard scanned 11 instrumented outbound model
+> calls and found zero configured protected-alias matches. Its run-scoped
+> estimated list-rate model cost was 4.9906 cents.
 
-**0:28–2:05 — uninterrupted live execution**
+Keep the words “estimated list-rate model cost.” Do not call this billed spend
+or exact cloud cost.
 
-> This is one continuous take of the real 6:45 Cloud Scheduler run. The request
-> authenticates as the configured OIDC invoker principal, while
-> Scheduler history and timing corroborate the cron origin. Four ADK gatherers
-> collect tokenized home, calendar, and school-mail context. Gemini plans the
-> day; a LoopAgent critic and deterministic default-deny policy review it; then
-> the dispatcher creates content-hash action documents and reuses them under
-> the tested retry path. Mission Control is scoped to this exact run. The
-> calendar proposal and briefing are autonomous. The
-> drafted person-to-person message stops at a permission slip because the agent
-> is not allowed to make that decision for me.
+### 2:07–2:27 — permission boundary
 
-**2:05–2:38 — boundary and refusal**
+Use this only if the pickup visibly proves the real approval and resulting
+household-channel release:
 
-> One tap can approve the proposed continuation, but the draft is released only
-> to the household channel; it never messages the recipient directly. A planted
-> front-door action takes the other path: the whitelist refuses it, and the
-> denial becomes evidence instead of disappearing into a log.
+> This is a labeled pickup from the same run. I approve the held draft, and
+> Hearthbeat releases it only to the configured household notification
+> channel. It does not contact the named recipient directly; denying would
+> leave the action stopped.
 
-**2:38–3:12 — architecture and Google proof**
+If the approval path is unavailable, show the unchanged awaiting-approval
+state and use:
 
-> Hearthbeat uses ADK Parallel, Sequential, and Loop agents; Gemini 3.5 Flash
-> and Flash-Lite on Vertex AI; Cloud Run; Scheduler; Firestore; Pub/Sub; and
-> BigQuery. The cloud never reaches into the house—the house polls approved
-> action documents. Known aliases are tokenized locally; a local Gemma/Qwen tier
-> scans free text on the house path; disclosed judge mode replays recorded
-> fixture findings; and instrumented Gemini requests are checked against the
-> configured protected-alias hash set.
+> This labeled pickup shows the personal action still held for my decision.
+> Hearthbeat can release the draft only to the configured household
+> notification channel after approval.
 
-**3:12–3:45 — reproducibility and close**
+Before recording, clear unrelated notifications and exclude real contact
+names, phone numbers, account identifiers, and notification previews.
 
-> This filmed run shows its own model IDs, actions, list-rate cost estimate, and
-> protected-alias match count. Judges can clone the public repository and run
-> the disclosed fixture house with one command and no Google credentials.
-> Hearthbeat: less remembering, less nagging, and fewer rushed surprises.
+### 2:27–3:01 — architecture
 
-## Integrity rules for the edit
-- The "LIVE — UNCUT" badge appears ONLY on the continuous take; everything
-  else carries a PICKUP badge. Nothing implies the pickups happened inside the
-  uncut segment.
-- Upload the final demo as **publicly visible** on YouTube or Vimeo. Private
-  and unlisted visibility do not satisfy the live Devpost submission gate.
-- All run-scoped claims cite the run id on screen.
-- No absolute cost figure in VO; Mission Control's per-run figure is visible.
-- Final frame-scan for PII before upload (terminal text included).
-- If the genuine take exceeds the 97-second target, uniformly speed the whole
-  uninterrupted segment and display the multiplier throughout; never trim,
-  splice, or rearrange frames inside it.
+> Google ADK composes Parallel, Sequential, and Loop agents. Gemini 3.5
+> Flash-Lite gathers context; Gemini 3.5 Flash plans and critiques on Vertex
+> AI. Cloud Run hosts the pipeline. Firestore stores checkpoints, actions, and
+> permission slips; Pub/Sub carries run-scoped audit events to BigQuery. The
+> house pulls approved actions and revalidates policy locally. Known aliases
+> are tokenized locally, a local Gemma/Qwen tier scans additional free-text
+> PII, and instrumented Gemini requests pass the protected-alias egress guard.
 
-## Assembly plan (9:15–10:15)
-ffmpeg straight cuts, burned-in captions + `.srt`; target 3:45. If the TV was
-not playing at 6:45, the media_pause beat moves to a PICKUP with its own
-labeled manual run — never blended into the uncut core.
+### 3:01–3:13 — judge mode and refusal
+
+> Judges can run the disclosed fixture house with one Docker command and no
+> Google credentials. It exercises the same orchestration and default-deny
+> policy, including a planted forbidden action.
+
+Show `SIMULATED_HOME=1 docker compose up`, followed by the local Mission
+Control denial row. The pickup may jump from command to result; do not imply
+that the complete Docker startup occurred in 12 seconds. Keep the badge
+`LOCAL EMULATOR · MANUAL`, because judge mode uses a separate datastore even
+when its date-derived run ID matches production.
+
+### 3:13–3:20 — close
+
+> Hearthbeat: less remembering, less nagging, and fewer rushed
+> surprises—without another chat window.
+
+## Edit integrity and release gates
+
+- The 85-second live-core sequence remains temporally intact inside the
+  montage. It is never trimmed internally, sped up, frozen, or rearranged; the
+  separately preserved source asset is hashed in the evidence record.
+- The constant prepared crop and persistent integrity badge remain unchanged.
+  No moment-specific masks are added.
+- Pickups never imply they occurred inside the uninterrupted execution.
+- The malformed nested display token in the longer briefing is not shown.
+- Production evidence and the local fixture run are never visually blended.
+- The final video is under four minutes, publicly visible, captioned in
+  English, and verified while logged out.
+- Complete a frame-by-frame public-data scan before upload, including browser
+  chrome, notifications, terminal text, account avatars, and URLs.

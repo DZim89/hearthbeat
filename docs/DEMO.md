@@ -5,47 +5,47 @@ Integrity rule: the money shot is the REAL 6:45 AM Cloud Scheduler firing
 structurally and are never presented as scheduled. Test runs use suffixed run
 ids.
 
-## Verified pre-run state (03:18 AM)
-- Local Calendar (`calendar.hearthbeat_family`), approval helper, bridge
-  automation, and the disclosed collision fixture were provisioned earlier.
-  Revalidate the house poller, phone path, and demo fixture at 6:35 before
-  recording; `runs/2026-08-31` was verified unclaimed at this checkpoint.
-- Cloud Run revision `hearthbeat-00015-rt7` serves 100% traffic; `/health` and
-  run-scoped Mission Control return HTTP 200; Scheduler remains enabled for
-  `45 6 * * *` in `America/Los_Angeles`.
-- Repo pushed PRIVATE. The current tracked tree passes the protected-alias and
-  source-context scans, but the one-time noreply history rewrite is still a
-  required public-release gate.
-- Evidence backup: Windows task `hearth-20260831-mc-snapshots-win` is scheduled
-  for 6:44, can wake the machine, and writes 20 run-scoped Mission Control HTML
-  snapshots to gitignored `data/evidence/cron645/`. Its HTTP/path preflight
-  passed. These snapshots are evidence backup, **not video footage**.
+## Captured production proof
 
-## 6:45 AM — the scheduled run (live footage required for the money shot)
-- Be ready by 6:35. Start the continuous capture no later than 6:43 with the
-  GCP Scheduler job, a visible clock, Cloud Run logs, Mission Control, and the
-  public-safe phone consequence arranged before recording begins.
-- Film the uninterrupted core per `docs/VIDEO_SCRIPT.md`; do not stop, splice,
-  or change sources inside that segment. The background HTML snapshots will
-  preserve evidence but cannot replace this recording.
-- If the scheduled firing is missed or fails, use the Cloud Scheduler
-  console's authenticated manual-run action as the truthful backup and label
-  the resulting take **manual**. Never relabel a post-run dashboard tour or a
-  manual recovery as an uncut scheduled execution.
+- The uninterrupted recorder started at 6:43:49 AM PDT, before the scheduled
+  trigger. Run `2026-08-31` started at 6:45:00 and completed at 6:45:51.
+- Cloud Scheduler remained enabled on `45 6 * * *` in
+  `America/Los_Angeles`; its last-attempt timestamp corroborates the filmed
+  run's `scheduled` label and configured OIDC invoker principal.
+- Mission Control reached `done` with all four stages complete. The calendar
+  and briefing actions completed autonomously; the family notification stayed
+  `awaiting_approval` and required a human decision.
+- The run-scoped evidence is 11 instrumented model calls, zero configured
+  protected-alias matches, and an estimated list-rate model cost of 4.9906¢.
+- The preserved source recording is 1920×1080, 30 fps, 15:00, SHA-256
+  `8083BB3E2D924E0D2E568D073B24FDEF19C0813948BFA34FBD4250E47AD9FD0C`.
 
-## 8:15–9:15 — pickups (see VIDEO_SCRIPT pickup table)
-Red-team labeled manual run; Gemma terminal beat; permission-slip tap +
-calendar continuation; judge-mode clean-clone beat; 3:2 thumbnail already at
-docs/hearthbeat-thumbnail.png. docs/EVIDENCE.md stays PENDING until each cell
-is copied from the exact 06:45 run's own evidence — never pre-filled.
+## Preserved uncut core
 
-## 9:15 → 12:30 — assembly and submission
-- 9:15–10:15 video edit (montage + labeled uncut core; PII frame-scan).
-- 10:15 YouTube upload, PUBLIC, captions verified, ≤4:00 confirmed.
-- 10:45 final scans (`pytest`, fixture contamination grep, `git log -S` name
-  scan, working-tree PII grep) → **repo public flip** → verify incognito.
-- 11:15 Devpost fill from SUBMISSION.md (+ the scheduled-run permalink
-  `…/missioncontrol?run=2026-08-31`), save draft per section.
-- 11:45 bonuses: dev.to publish, #AllThingsAgenticHackathon post, links back.
-- 12:10 incognito link sweep → **SUBMIT ≤ 12:30** (13:00 internal hard
-  ceiling; 5:00 PM Devpost deadline is the disaster valve only).
+- `live-core-uncut.mp4` is an 85-second, 1× extraction from one continuous
+  source interval. It begins before the trigger appears and ends only after
+  Mission Control reaches `done`; there are no internal edits.
+- A consistent crop removes unrelated browser chrome and avoids the malformed
+  nested display token in the longer briefing. The overlay remains
+  `LIVE · UNCUT · 1× · RUN 2026-08-31` throughout.
+- Pickups are labeled separately and never presented as part of the live take.
+
+## Final narration and optional pickups (see VIDEO_SCRIPT.md)
+
+Record the personal-friction hook and clean narration first. Add only a short,
+clearly labeled permission-boundary or judge-mode pickup if it materially
+improves legibility. The fixed live core, run-evidence card, architecture
+pickup, closing card, and 3:2 thumbnail are already prepared.
+
+## Final assembly and submission
+
+- Record narration, assemble the montage around the fixed uncut core, generate
+  English captions, and complete a frame-by-frame public-data scan.
+- Upload as a publicly visible YouTube video, verify playback/captions while
+  logged out, and confirm the duration is under four minutes.
+- Run final tests and repository scans, change the repository to public, and
+  verify a credential-free anonymous clone.
+- Complete Devpost from `SUBMISSION.md`, including the exact run permalink and
+  already-published bonus links; verify all five steps in Preview.
+- Submit by 1:00 PM PDT. The 5:00 PM official deadline remains a recovery
+  window, not the working target.

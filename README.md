@@ -29,6 +29,12 @@ SIMULATED_HOME=1 docker compose up
 
 Then open **http://localhost:8080/missioncontrol** and watch a full run:
 
+Two fresh-clone, `--no-cache` validations on the submission host reached a
+successful judge-mode kickoff in **184.487 s** and **194.845 s**. These are
+observed Windows/WSL/Docker timings, not a cross-machine SLA; cached starts can
+be faster. The documented promise is a **single-command reproducible judge
+mode**, not a 90-second startup.
+
 1. The house mirrors a (fixture) home into the Firestore **emulator** and the
    school email is ingested through the double-scrub privacy gateway.
 2. The kickoff container fires the pipeline — honestly labeled
@@ -235,4 +241,6 @@ action plan; it is not a hard billing cap.
 
 ## License
 
-Hearthbeat is released under the [Apache License 2.0](LICENSE).
+Hearthbeat is released under the [Apache License 2.0](LICENSE). The frozen
+production environment's installed-metadata inventory is in
+[docs/DEPENDENCY_LICENSES.md](docs/DEPENDENCY_LICENSES.md).
