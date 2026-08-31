@@ -41,9 +41,9 @@ Then open **http://localhost:8080/missioncontrol** and watch a full run:
    `judge_auto`).
 
 The hosted, live-against-the-real-house instance is here:
-**https://hearthbeat-<hash>-uc.a.run.app/missioncontrol** *(read-only; it shows
-whatever this morning's real run did — in token space, because real names
-never reach the cloud at all).*
+**https://hearthbeat-369944070051.us-central1.run.app/missioncontrol**
+*(read-only; it shows whatever this morning's real run did — in token space,
+because real names never reach the cloud at all).*
 
 ---
 
