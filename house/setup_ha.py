@@ -60,13 +60,17 @@ def install_bridge() -> None:
 
 
 def seed_calendar() -> None:
-    """The DISCLOSED demo collision: soccer vs dinner at Grandma's, tomorrow."""
+    """The DISCLOSED demo collision: soccer vs dinner at Grandma's, tomorrow.
+    Names come from the LOCAL token map at runtime — never from this file."""
+    from house import scrub
+
+    tmap = scrub.load_map(config.TOKEN_MAP_PATH)
     tz = datetime.now().astimezone().tzinfo
     tomorrow = (datetime.now(tz) + timedelta(days=1)).date()
     events = [
-        ("[[P_KID1]] soccer practice".replace("[[P_KID1]]", "[[P_KID1]]"), "17:00", "18:30",
+        (scrub.rehydrate("[[P_KID1]] soccer practice", tmap), "17:00", "18:30",
          "bring cleats"),
-        ("Family dinner at Grandma's", "17:30", "19:00",
+        (scrub.rehydrate("Family dinner at [[P_GRANDMA]]'s", tmap), "17:30", "19:00",
          "SEEDED DEMO EVENT (disclosed): overlaps soccer practice"),
     ]
     for summary, start, end, desc in events:
