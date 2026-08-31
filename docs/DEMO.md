@@ -8,9 +8,18 @@ the real date-keyed run doc stays untouched until the camera is rolling.
 ## Pre-flight (done during the day, Claude)
 - [x] Live E2E on real Vertex/Firestore (e2e3): 4 stages, red-team denial row,
       egress 13 checks / 0 matches, 1.7¢.
+- [x] Cloud Run deployed + cloud E2E via /trigger (cloud2, 1.3¢); /health green.
 - [x] Pub/Sub → BigQuery selftest row landed; 5 views created.
 - [x] gemma3 pulled, warm ~2.5 s, load-bearing in deep_scrub (qwen fallback armed).
-- [x] Real token map written (gitignored); real-hash egress guard in deploy env.
+- [x] Real token map written (gitignored); real-hash egress guard in deploy env
+      — and it CAUGHT a real leak (fixture-map mirror) during the build.
+- [x] **Scheduled dry-fire PASSED** (17:04 one-off): OIDC verified,
+      `trigger_source=scheduled`, `triggered_by=sa-home@…`, all 4 stages, 1.33¢.
+      One-off job deleted; `runs/2026-08-30` gets `infra/preshot_cleanup.py` at 22:50.
+- [x] **Kill-and-resume PROVEN** (drill4): SIGKILL mid-run → stale-heartbeat
+      takeover on re-fire → `attempt: 2, status: done`; drill3 shows checkpoint
+      persistence; zero duplicate actions. Re-runnable on camera at 8:15 AM.
+- [x] Actionable notification delivered to the phone (transport test).
 
 ## Donny acts — evening (each ≤5 min)
 1. **21:00** `! sudo apt-get install -y docker.io docker-compose-v2 && sudo chmod 666 /var/run/docker.sock`
