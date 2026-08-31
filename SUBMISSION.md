@@ -231,8 +231,8 @@ bigquery, gemma, ollama, python, fastapi, home-assistant, docker
 - Video (public YouTube, ≤4:00, EN captions): «FILL AFTER UPLOAD»
 - Architecture diagram: in repo — docs/architecture.png (+ docs/ARCHITECTURE.md)
 - Gallery thumbnail (3:2): docs/hearthbeat-thumbnail.png
-- dev.to build log (bonus): «FILL»
-- Social post w/ #AllThingsAgenticHackathon (bonus): «FILL»
+- dev.to build log (bonus): https://dev.to/dzim89/building-hearthbeat-in-one-night-a-safe-household-agent-with-google-adk-2an8
+- Social post w/ #AllThingsAgenticHackathon (bonus): https://www.linkedin.com/feed/update/urn:li:share:7500170699085447168/
 
 ## Try it (judges)
 ```bash
