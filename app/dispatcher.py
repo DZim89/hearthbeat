@@ -46,10 +46,31 @@ class Dispatcher(BaseAgent):
         plan = _as_dict(state.get("day_plan"))
         actions = [a for a in plan.get("actions", []) if isinstance(a, dict)]
         now = datetime.now(policy.tz)
-        active = ledger.ACTIVE
+        active = ledger.active_for(run_id)
 
         dispatched: list[str] = []
         denials: list[dict[str, Any]] = []
+
+        # Plan-level rules first (the loop enforces them, but a loop that
+        # exhausted its iterations must not smuggle them past dispatch):
+        spent = ledger.RUN_COST_MICROCENTS.get(run_id, 0)
+        plan_findings = [
+            f for f in policy.check(plan, now=now, spent_microcents=spent)
+            if f.action_index == -1
+        ]
+        for f in plan_findings:
+            denials.append({"stage": "dispatch", **f.to_dict()})
+            if active:
+                active.emit_public(
+                    "policy_denial", stage="dispatch", rule=f.rule,
+                    action_index=-1, detail=f.detail,
+                )
+        if any(f.rule == "budget_exhausted" for f in plan_findings):
+            actions = []  # refuse the whole dispatch — spend cap is a hard stop
+        else:
+            max_actions = int(policy.raw.get("max_actions_per_run", 6))
+            actions = actions[:max_actions]
+
         for i, action in enumerate(actions):
             violations = policy.check_action(action, now=now)
             if violations:

@@ -16,7 +16,9 @@ def main() -> None:
     hashes = scrub.salted_alias_hashes(tmap)
     print(f"EGRESS_SALT={tmap.salt}")
     print(f"EGRESS_ALIAS_HASHES={','.join(hashes)}")
+    print(f"EGRESS_KNOWN_TOKENS={','.join(sorted(tmap.tokens()))}")
     print(f"# {len(hashes)} hashes from {config.TOKEN_MAP_PATH.name} — no plaintext exported")
+    print("# (tokens are not secret — they let the cloud spot a SMUGGLED fake token)")
 
 
 if __name__ == "__main__":

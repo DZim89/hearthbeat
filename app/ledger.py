@@ -32,9 +32,14 @@ from house.scrub import scan_hashed
 # to the run doc at each checkpoint). PolicyGate reads this for budget checks.
 RUN_COST_MICROCENTS: dict[str, int] = defaultdict(int)
 
-# The plugin serving the currently-executing run (set by runcontrol.execute_run)
-# so pure-code agents (PolicyGate, Dispatcher) can emit through the same sink.
-ACTIVE: "LedgerPlugin | None" = None
+# Plugins for currently-executing runs, keyed by run_id (set by
+# runcontrol.execute_run) so pure-code agents (PolicyGate, Dispatcher) emit
+# through the right run's sink even if two runs overlap in one process.
+ACTIVE: dict[str, "LedgerPlugin"] = {}
+
+
+def active_for(run_id: str) -> "LedgerPlugin | None":
+    return ACTIVE.get(run_id)
 
 
 def _now_ms() -> int:
@@ -117,6 +122,18 @@ class LedgerPlugin(BasePlugin):
         self.alias_hashes = {
             h for h in os.environ.get("EGRESS_ALIAS_HASHES", "").split(",") if h
         }
+        self.known_tokens = frozenset(
+            t for t in os.environ.get("EGRESS_KNOWN_TOKENS", "").split(",") if t
+        )
+        # Fail-closed: production must never run with the guard silently off.
+        if not self.alias_hashes:
+            if os.environ.get("K_SERVICE") and os.environ.get("SIMULATED_HOME") != "1":
+                raise RuntimeError(
+                    "EGRESS_ALIAS_HASHES is empty on Cloud Run — refusing to run "
+                    "with the egress guard disabled (set it from "
+                    "house/export_egress_hashes.py output)."
+                )
+            self._emit("egress_guard_disabled")
         self.record_dir = (
             Path(os.environ.get("LLM_FIXTURES_DIR", "fixtures/llm"))
             if os.environ.get("RECORD_LLM") == "1"
@@ -173,7 +190,9 @@ class LedgerPlugin(BasePlugin):
     async def before_model_callback(self, *, callback_context, llm_request):
         text = _request_text(llm_request)
         if self.alias_hashes:
-            matches = scan_hashed(text, self.egress_salt, self.alias_hashes)
+            matches = scan_hashed(
+                text, self.egress_salt, self.alias_hashes, known_tokens=self.known_tokens
+            )
             self.egress_checks += 1
             self.egress_matches += matches
             if matches:
@@ -244,15 +263,30 @@ class LedgerPlugin(BasePlugin):
 
 
 def _request_text(llm_request: Any) -> str:
-    """Every text part headed to the model — system instruction + contents."""
+    """EVERYTHING headed to the model: system instruction (str or parts), text
+    parts, AND function_call args / function_response payloads — tool results
+    carry the household data itself and must not bypass the scan."""
     chunks: list[str] = []
+
+    def _add_part(part: Any) -> None:
+        t = getattr(part, "text", None)
+        if t:
+            chunks.append(t)
+        fc = getattr(part, "function_call", None)
+        if fc is not None and getattr(fc, "args", None):
+            chunks.append(json.dumps(fc.args, default=str))
+        fr = getattr(part, "function_response", None)
+        if fr is not None and getattr(fr, "response", None):
+            chunks.append(json.dumps(fr.response, default=str))
+
     cfg = getattr(llm_request, "config", None)
     si = getattr(cfg, "system_instruction", None) if cfg else None
     if isinstance(si, str):
         chunks.append(si)
+    elif si is not None:
+        for part in getattr(si, "parts", None) or []:
+            _add_part(part)
     for content in getattr(llm_request, "contents", None) or []:
         for part in getattr(content, "parts", None) or []:
-            t = getattr(part, "text", None)
-            if t:
-                chunks.append(t)
+            _add_part(part)
     return "\n".join(chunks)

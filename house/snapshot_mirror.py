@@ -49,13 +49,26 @@ def build_snapshot() -> dict[str, Any]:
         else:
             entities[eid] = slim
 
+    # Free-text CONTENT (calendar text, media titles) is exactly the class of
+    # data that can carry PII the family map cannot know — it goes through the
+    # full deep_scrub (map -> local Gemma -> map), same as school email.
+    from house.privacy_gateway import deep_scrub
+
+    def _free_text(s: str) -> str:
+        s = (s or "").strip()
+        return deep_scrub(s).text if s else ""
+
+    for slim in entities.values():
+        if slim.get("media_title"):
+            slim["media_title"] = _free_text(str(slim["media_title"]))
+
     now = datetime.now(timezone.utc)
     calendar = [
         {
-            "summary": ev.get("summary", ""),
+            "summary": _free_text(ev.get("summary", "")),
             "start": str((ev.get("start") or {}).get("dateTime") or (ev.get("start") or {}).get("date", "")),
             "end": str((ev.get("end") or {}).get("dateTime") or (ev.get("end") or {}).get("date", "")),
-            "description": (ev.get("description") or "")[:200],
+            "description": _free_text((ev.get("description") or "")[:200]),
         }
         for ev in ha.get_calendar_events(
             config.CALENDAR_ENTITY, now.isoformat(), (now + timedelta(hours=48)).isoformat()
@@ -68,9 +81,10 @@ def build_snapshot() -> dict[str, Any]:
         "energy": energy,
         "calendar": calendar,
     }
-    # Scrub the WHOLE serialized snapshot (names hide in friendly_names, media
-    # titles, event summaries), then hard-verify before it may leave the house.
-    dumped = json.dumps(snapshot)
+    # Scrub the WHOLE serialized snapshot (names hide in friendly_names and
+    # entity ids too), then hard-verify before it may leave the house.
+    # ensure_ascii=False: an escaped non-ASCII name must not dodge the regexes.
+    dumped = json.dumps(snapshot, ensure_ascii=False)
     scrubbed, hits = scrub.apply_map(dumped, tmap)
     scrub.assert_clean(scrubbed, tmap)
     clean = json.loads(scrubbed)

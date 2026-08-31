@@ -28,8 +28,20 @@ APPROVE_PREFIX = "HEARTH_APPROVE_"
 DENY_PREFIX = "HEARTH_DENY_"
 
 
+def _rehydrate_value(value, tmap: scrub.TokenMap):
+    """Rehydrate every STRING in the structure individually — never through a
+    serialized JSON blob, where a name containing a quote would corrupt parsing."""
+    if isinstance(value, str):
+        return scrub.rehydrate(value, tmap)
+    if isinstance(value, dict):
+        return {k: _rehydrate_value(v, tmap) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_rehydrate_value(v, tmap) for v in value]
+    return value
+
+
 def _rehydrate_action(action: dict, tmap: scrub.TokenMap) -> dict:
-    return json.loads(scrub.rehydrate(json.dumps(action), tmap))
+    return _rehydrate_value(action, tmap)
 
 
 def _claim(ref) -> bool:
@@ -57,7 +69,23 @@ def _claim(ref) -> bool:
 def _execute(doc_id: str, doc: dict, tmap: scrub.TokenMap) -> None:
     policy = load_policy(config.REPO_ROOT / "config" / "policy.yaml")
     action_tok = doc.get("action") or {}
-    human_approved = bool(doc.get("sensitive"))
+    human_approved = False
+    if doc.get("sensitive"):
+        # The house trusts the PERMISSION SLIP, not a cloud-writable status
+        # field: a sensitive action executes only if its slip was decided by a
+        # known consent channel. (Threat model: compromised cloud must not be
+        # able to fabricate human approval.)
+        slip = db().collection(SLIPS).document(doc_id).get().to_dict() or {}
+        if slip.get("status") != "approved" or slip.get("decided_via") not in (
+            "ha_mobile", "console", "judge_auto",
+        ):
+            db().collection(ACTIONS).document(doc_id).update(
+                {"status": "refused_by_house", "result": "slip_not_verified"}
+            )
+            events.emit("action_refused_by_house", action_id=doc_id,
+                        rules=["slip_not_verified"])
+            return
+        human_approved = True
     violations = policy.check_action(
         action_tok, now=datetime.now(policy.tz), human_approved=human_approved
     )
@@ -146,19 +174,33 @@ def _decide(slip_id: str, approved: bool, via: str) -> None:
 
 
 def _check_approval_helper() -> None:
-    state = ha.get_state(config.APPROVAL_HELPER)
-    if not state:
-        return
-    value = str(state.get("state", ""))
-    if value.startswith(APPROVE_PREFIX):
-        _decide(value.removeprefix(APPROVE_PREFIX), True, "ha_mobile")
-    elif value.startswith(DENY_PREFIX):
-        _decide(value.removeprefix(DENY_PREFIX), False, "ha_mobile")
-    else:
-        return
-    ha.call_service(
-        "input_text", "set_value", {"entity_id": config.APPROVAL_HELPER, "value": ""}
-    )
+    # Drain up to 3 taps per cycle — the helper is a single slot, so clear and
+    # re-read in case two notifications were answered inside one poll window.
+    for _ in range(3):
+        state = ha.get_state(config.APPROVAL_HELPER)
+        if not state:
+            return
+        value = str(state.get("state", ""))
+        if value.startswith(APPROVE_PREFIX):
+            _decide(value.removeprefix(APPROVE_PREFIX), True, "ha_mobile")
+        elif value.startswith(DENY_PREFIX):
+            _decide(value.removeprefix(DENY_PREFIX), False, "ha_mobile")
+        else:
+            return
+        ha.call_service(
+            "input_text", "set_value", {"entity_id": config.APPROVAL_HELPER, "value": ""}
+        )
+
+
+def _requeue_stale_claims() -> None:
+    """A poller that died between claim and completion must not strand the
+    action in status=claimed forever."""
+    now = datetime.now(timezone.utc)
+    for snap in db().collection(ACTIONS).where("status", "==", "claimed").get():
+        at = (snap.to_dict() or {}).get("claimed_at")
+        if at and (now - at).total_seconds() > 600:
+            snap.reference.update({"status": "approved", "claimed_by": ""})
+            events.emit("action_requeued_stale_claim", action_id=snap.id)
 
 
 def _judge_auto_approve() -> None:
@@ -187,6 +229,10 @@ def cycle() -> None:
         _check_approval_helper()
     except Exception as e:  # noqa: BLE001
         print(f"[poller] approval helper read failed: {e}")
+    try:
+        _requeue_stale_claims()
+    except Exception as e:  # noqa: BLE001
+        print(f"[poller] stale-claim requeue failed: {e}")
     if config.SIMULATED:
         _judge_auto_approve()
 

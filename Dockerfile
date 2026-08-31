@@ -18,6 +18,9 @@ RUN uv sync --frozen --no-dev
 
 ARG AGENT_VERSION=0.0.0
 ENV AGENT_VERSION=${AGENT_VERSION}
+# The image venv is complete — `uv run` must NOT re-sync (it would pull dev
+# deps back in and hit PyPI at container start, breaking offline judge mode).
+ENV UV_NO_SYNC=1
 
 EXPOSE 8080
 

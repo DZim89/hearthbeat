@@ -93,6 +93,40 @@ def test_multiword_alias_single_word_leak_detected(tmap):
     assert scrub.scan_hashed(f"the {surname} family", tmap.salt, hashes) > 0
 
 
+def test_identifier_concatenations_scrubbed(tmap):
+    # The e2e3 leak class: names glued to suffixes inside entity ids pass a
+    # word-boundary regex. Person aliases >=5 chars now scrub as substrings.
+    out, hits = scrub.apply_map("sensor.rileys_tablet_battery and person.caseyz", tmap)
+    assert "riley" not in out.lower() and "casey" not in out.lower()
+    assert hits >= 2
+    scrub.assert_clean(out, tmap)
+    with pytest.raises(scrub.ScrubLeakError):
+        scrub.assert_clean("device_tracker.hartwellfamily_hub", tmap)
+
+
+def test_unknown_token_smuggling_detected(tmap):
+    # A model-invented [[P_CASEY]] must NOT be treated as a safe token — its
+    # inner text is scanned like plain text (the [[P_DONNY]] incident).
+    with pytest.raises(scrub.ScrubLeakError):
+        scrub.assert_clean("[[P_CASEY]] is currently home", tmap)
+    hashes = set(scrub.salted_alias_hashes(tmap))
+    assert scrub.scan_hashed("[[P_CASEY]] is home", tmap.salt, hashes,
+                             known_tokens=tmap.tokens()) > 0
+    assert scrub.scan_hashed("[[P_MOM]] is home", tmap.salt, hashes,
+                             known_tokens=tmap.tokens()) == 0  # known token: safe
+    scrub.assert_clean("[[P_MOM]] is home and [[REDACTED_0]] called", tmap)
+
+
+def test_rehydrate_longest_first_prefix_ids():
+    tmap = scrub.TokenMap(version=1, salt="s", entries=[
+        scrub.MapEntry(token="[[A]]", kind="other", aliases=[],
+                       entity_ids={"media_player.real_tv": "media_player.tv",
+                                   "media_player.real_tv_2": "media_player.tv_2"}),
+    ])
+    out = scrub.rehydrate("pause media_player.tv_2 now", tmap)
+    assert "media_player.real_tv_2" in out
+
+
 def test_map_file_shape_validated(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"version": 1, "salt": "s", "entries": [

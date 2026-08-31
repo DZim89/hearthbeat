@@ -87,17 +87,28 @@ def claim_run(run_id: str, trigger_source: str, triggered_by: str) -> dict[str, 
 
 
 def load_checkpoints(run_id: str) -> dict[str, dict[str, Any]]:
-    out: dict[str, dict[str, Any]] = {}
+    """Checkpoints are ordered: only the longest PREFIX of STAGE_ORDER counts.
+    An orphan later checkpoint (earlier stage's write failed) must not cause a
+    re-planned run to skip dispatch of the new plan."""
+    raw: dict[str, dict[str, Any]] = {}
     for snap in _run_ref(run_id).collection("checkpoints").get():
-        out[snap.id] = (snap.to_dict() or {}).get("state", {})
+        raw[snap.id] = (snap.to_dict() or {}).get("state", {})
+    out: dict[str, dict[str, Any]] = {}
+    for stage in STAGE_ORDER:
+        if stage not in raw:
+            break
+        out[stage] = raw[stage]
     return out
 
 
 def on_agent_complete(run_id: str, agent_name: str, callback_context) -> None:
     """Ledger-plugin hook: checkpoint after each top-level stage + heartbeat."""
     stage = _AGENT_TO_STAGE.get(agent_name)
+    spent = ledger.RUN_COST_MICROCENTS.get(run_id, 0)
     if stage is None:
-        _run_ref(run_id).update({"heartbeat_at": firestore.SERVER_TIMESTAMP})
+        _run_ref(run_id).update(
+            {"heartbeat_at": firestore.SERVER_TIMESTAMP, "cost_microcents": spent}
+        )
         return
     state = callback_context.state
     payload = {k: state.get(k) for k in STAGE_STATE_KEYS[stage] if state.get(k) is not None}
@@ -108,6 +119,7 @@ def on_agent_complete(run_id: str, agent_name: str, callback_context) -> None:
         {
             f"stage_status.{stage}": "done",
             "heartbeat_at": firestore.SERVER_TIMESTAMP,
+            "cost_microcents": spent,  # survives instance death for the budget rule
         }
     )
 
@@ -142,8 +154,13 @@ async def execute_run(
 
     checkpoints = load_checkpoints(run_id)
     done_stages = set(checkpoints)
+    # A takeover on a fresh instance must resume the budget meter, not reset it.
+    prior_cost = int((_run_ref(run_id).get().to_dict() or {}).get("cost_microcents") or 0)
+    ledger.RUN_COST_MICROCENTS[run_id] = max(
+        ledger.RUN_COST_MICROCENTS.get(run_id, 0), prior_cost
+    )
     plugin = LedgerPlugin(run_id, trigger_source)
-    ledger.ACTIVE = plugin
+    ledger.ACTIVE[run_id] = plugin
     try:
         root = build_pipeline(done_stages)
         adk_app = App(name="app", root_agent=root, plugins=[plugin])
@@ -198,5 +215,5 @@ async def execute_run(
             pass
         raise
     finally:
-        if ledger.ACTIVE is plugin:
-            ledger.ACTIVE = None
+        if ledger.ACTIVE.get(run_id) is plugin:
+            del ledger.ACTIVE[run_id]

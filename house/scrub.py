@@ -25,6 +25,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 TOKEN_RE = re.compile(r"\[\[[A-Z0-9_]+\]\]")
+REDACTED_RE = re.compile(r"\[\[REDACTED_\d+\]\]")
+
+# Person aliases of this length or more are ALSO scrubbed as bare substrings
+# (no word boundary): entity ids and identifiers glue names to suffixes
+# ('donnys_pixel', 'person.donnyz') and a boundary regex sails right past
+# them. Over-firing inside a rare English word is the safe direction.
+SUBSTRING_MIN_LEN = 5
 
 
 class ScrubLeakError(RuntimeError):
@@ -53,6 +60,21 @@ class TokenMap:
     def entity_pairs(self) -> list[tuple[str, str]]:
         pairs = [(real, pseudo) for e in self.entries for real, pseudo in e.entity_ids.items()]
         return sorted(pairs, key=lambda p: len(p[0]), reverse=True)
+
+    def substring_aliases(self) -> list[tuple[str, str]]:
+        """(alias, token) pairs scrubbed WITHOUT word boundaries — single-word
+        person names long enough to be identifying inside identifiers."""
+        pairs = [
+            (a, e.token)
+            for e in self.entries
+            if e.kind == "person"
+            for a in e.aliases
+            if len(a) >= SUBSTRING_MIN_LEN and " " not in a
+        ]
+        return sorted(pairs, key=lambda p: len(p[0]), reverse=True)
+
+    def tokens(self) -> frozenset[str]:
+        return frozenset(e.token for e in self.entries)
 
 
 def load_map(path: str | Path) -> TokenMap:
@@ -112,16 +134,31 @@ def apply_map(text: str, tmap: TokenMap) -> tuple[str, int]:
             return segment
 
         text = _outside_tokens(text, _sub)
+    # Second pass: bare-substring scrub for identifying person names, so
+    # 'donnys_pixel' / 'person.donnyz' style concatenations cannot slip through.
+    for alias, token in tmap.substring_aliases():
+        rx = re.compile(re.escape(alias), re.IGNORECASE)
+
+        def _sub2(segment: str) -> str:
+            nonlocal hits
+            segment, n = rx.subn(token, segment)  # noqa: B023 — consumed immediately
+            hits += n
+            return segment
+
+        text = _outside_tokens(text, _sub2)
     return text, hits
 
 
 def rehydrate(text: str, tmap: TokenMap) -> str:
-    """Inverse of apply_map — house-side only. Token -> first alias; pseudo id -> real id."""
+    """Inverse of apply_map — house-side only. Token -> first alias; pseudo id ->
+    real id. Longest-first so a pseudo id that prefixes another can't corrupt it."""
+    subs: list[tuple[str, str]] = []
     for entry in tmap.entries:
         if entry.aliases:
-            text = text.replace(entry.token, entry.aliases[0])
-        for real, pseudo in entry.entity_ids.items():
-            text = text.replace(pseudo, real)
+            subs.append((entry.token, entry.aliases[0]))
+        subs.extend((pseudo, real) for real, pseudo in entry.entity_ids.items())
+    for old, new in sorted(subs, key=lambda p: len(p[0]), reverse=True):
+        text = text.replace(old, new)
     return text
 
 
@@ -132,15 +169,32 @@ def redact_spans(text: str, spans: list[str]) -> str:
     return text
 
 
+def _neutralize_tokens(text: str, known_tokens: frozenset[str]) -> str:
+    """Remove KNOWN tokens (they are the safe form) but UNWRAP unknown ones:
+    a smuggled [[P_DONNY]] becomes ' P DONNY ' and gets scanned as plain text."""
+
+    def repl(m: re.Match) -> str:
+        tok = m.group(0)
+        if tok in known_tokens or REDACTED_RE.fullmatch(tok):
+            return " "
+        return " " + tok[2:-2].replace("_", " ") + " "
+
+    return TOKEN_RE.sub(repl, text)
+
+
 def assert_clean(text: str, tmap: TokenMap) -> None:
     """Hard-fail if any alias or real entity id survives. The final deterministic gate."""
     for real, _pseudo in tmap.entity_pairs():
         if real in text:
             raise ScrubLeakError(f"real entity id survived scrub: {real!r}")
-    stripped = TOKEN_RE.sub(" ", text)  # tokens themselves are not leaks
+    stripped = _neutralize_tokens(text, tmap.tokens())
     for alias, _token in tmap.aliases():
         if _alias_regex(alias).search(stripped):
             raise ScrubLeakError(f"alias survived scrub (len={len(alias)})")
+    lowered = stripped.lower()
+    for alias, _token in tmap.substring_aliases():
+        if alias.lower() in lowered:
+            raise ScrubLeakError(f"person name survived scrub as substring (len={len(alias)})")
 
 
 def _hash(salt: str, phrase: str) -> str:
@@ -174,14 +228,23 @@ def salted_alias_hashes(tmap: TokenMap) -> list[str]:
     return sorted(out)
 
 
-def scan_hashed(text: str, salt: str, alias_hashes: set[str], max_ngram: int = 3) -> int:
+def scan_hashed(
+    text: str,
+    salt: str,
+    alias_hashes: set[str],
+    max_ngram: int = 3,
+    known_tokens: frozenset[str] = frozenset(),
+) -> int:
     """Cloud-side: count words/ngrams of text whose salted hash is a known alias hash.
 
     The cloud holds only hashes — it can detect a leak without learning the alias.
+    KNOWN tokens are the safe form and are skipped; an UNKNOWN [[...]] (e.g. a
+    model-invented [[P_DONNY]]) is unwrapped and scanned as plain text. The word
+    regex is unicode-aware so non-ASCII names are not invisible.
     Returns the number of matches (0 == provably clean w.r.t. the map).
     """
-    text = TOKEN_RE.sub(" ", text)  # [[P_DAD]] is the SAFE form — never scan tokens
-    words = re.findall(r"[A-Za-z][A-Za-z'’-]*", text)
+    text = _neutralize_tokens(text, known_tokens)
+    words = re.findall(r"[^\W\d_]+(?:['’-][^\W\d_]+)*", text, re.UNICODE)
     lowered = [w.lower() for w in words]
     matches = 0
     for n in range(1, max_ngram + 1):

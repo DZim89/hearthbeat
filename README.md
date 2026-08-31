@@ -100,7 +100,9 @@ Real names live only inside the house. Three independent layers:
 Standing proof in BigQuery:
 
 ```sql
-SELECT * FROM `new-prompt-490003.agent_logs.egress_violations_v`;  -- 0 rows
+-- zero rows for every legitimate run; the only rows ever written are the
+-- guard blocking OUR OWN build mistake (see the honesty ledger below)
+SELECT * FROM `new-prompt-490003.agent_logs.egress_violations_v`;
 SELECT * FROM `new-prompt-490003.agent_logs.privacy_tier_v`;       -- Gemma's catches
 ```
 
@@ -195,6 +197,14 @@ docs/       architecture, demo runbook, the HA automation
   sources, not part of this submission's codebase.
 - **Test/demo runs** use suffixed run ids (`YYYY-MM-DD-e2eN`) and
   `trigger_source=manual` — the scheduled-run footage is a real cron firing.
+- **The egress guard caught us first.** During the build, the house mirror was
+  once run with the fixture map instead of the real one, so real first names
+  landed in the (private) Firestore mirror. On the very next cloud run the
+  salted-hash egress guard matched 2 protected-name hashes in the outbound
+  Gemini request, **blocked the model call, and failed the run**. Those
+  `egress_block` rows are still in BigQuery — we left them there, because the
+  proof isn't "the table is empty", it's "every row in it is the guard doing
+  its job against our own mistakes". Zero rows exist for any legitimate run.
 
 ## Cost
 

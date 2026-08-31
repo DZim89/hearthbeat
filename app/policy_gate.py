@@ -66,7 +66,7 @@ class PolicyGate(BaseAgent):
         findings = policy.check(plan, now=now, spent_microcents=spent)
         ph = plan_hash(plan)
 
-        active = ledger.ACTIVE
+        active = ledger.active_for(run_id)
         for f in findings:
             if active:
                 active.emit_public(

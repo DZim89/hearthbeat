@@ -21,11 +21,18 @@ services:
     ports: ["8080:8080"]
     environment:
       SIMULATED_HOME: "1"
-      JUDGE_LLM: ${JUDGE_LLM:-fixture}
+      JUDGE_LLM: ${JUDGE_LLM:-fixture}          # JUDGE_LLM=live uses GEMINI_API_KEY below
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      RECORD_LLM: ${RECORD_LLM:-0}
       FIRESTORE_EMULATOR_HOST: firestore:8790
       GOOGLE_CLOUD_PROJECT: demo-hearthbeat
       LEDGER_SINK: file
       LEDGER_FILE: /data/ledger.jsonl
+      # The egress guard runs for real in judge mode too — hashes of the
+      # FIXTURE family (public names, public salt), so judges see live scans.
+      EGRESS_SALT: fixture-salt-not-secret
+      EGRESS_KNOWN_TOKENS: "[[FAMILY]],[[P_DAD]],[[P_GRANDMA]],[[P_KID1]],[[P_KID2]],[[P_KID3]],[[P_KID4]],[[P_MOM]],[[R_LIVING]],[[S_SCHOOL]]"
+      EGRESS_ALIAS_HASHES: "2a59fb39a6f1472df034b6a55e2426bb63d81d1861cceeef8b53a0c6d1aaf050,4d322d6eca984bff9c501521ce8250db1926cbf1f19f79c652dea409f1fd7562,53b2c010c7b898778041dff2b404f21949dbb42a4611a9b39c857e95a3d68adb,53e621898b836bf33b55f288381d4766fb7193d244611001fdeacad7cbcc8a6e,5c65bdce44d8a625a08f4f33b450f6f709b95a3c4fa6ec913b5c357683a9b5be,622ff05c3cae6611289da20a32003da791f56c742e876ff599946507ac30b52d,70fa031995a8a9ecee9d00d5db2bd0d815e53eb276e5ff7f6988548238c4c0ad,75423862b1155baf67b7c76c1b120abe7b2b27d41a8ebdd6c89353a768a4ab73,80a80408e5679f38d159bddd45b88b803dc269c8925fd1a05e1e50fd93611b36,9a3adf4f9d0efa1231f58b9e88941a1db46a6dbd6ead43f0eb6fbaefc124c0fb,ad2a34630ad454ecc96f2a3a2114e8fbd88432d050dc71dd2eac3c65f9d749f7,b02a0a9500c21dd195656caefdebe7084949315220019260ae3257536abb466a,be341a31688d82439af9d79aa8627cb077a5ed4ed7c89ffcbb581a34d3763120,c96eeb0d2d7b1cd000d27e1950a494e3320a8ccbd5e6d2e28daac7f0e563b793,d5c62412732bb0cbba5d0fd1d6497f239ff7ce2b24faeb3358efee17b4a7c03b,d87b323de3e74c3770c4370656ae6c7ba676be479f0b4b353f468c79818ff8d5,e86c46358d80e13068e21255c1e36de3a6602aad429dc97814fe4197e460d133,fd914f1ebc063e2af1d27e444ec4180f95ef60d68dc8d7f3146f1a1a31cffbaf"
     volumes: [ "ledger:/data" ]
     depends_on: [ firestore ]
 

@@ -67,13 +67,21 @@ def ingest_file(path: Path) -> None:
 def main() -> None:
     config.WATCH_DIR.mkdir(parents=True, exist_ok=True)
     print(f"[ingest] watching {config.WATCH_DIR}")
+    retries: dict[str, int] = {}
     while True:
         for path in sorted(config.WATCH_DIR.glob("*.eml")):
             try:
                 ingest_file(path)
+                retries.pop(str(path), None)
             except Exception as e:  # noqa: BLE001
-                print(f"[ingest] {path.name} failed: {e}")
-                path.rename(path.with_suffix(".eml.failed"))
+                n = retries.get(str(path), 0) + 1
+                retries[str(path)] = n
+                print(f"[ingest] {path.name} failed (attempt {n}/5): {e}")
+                if n >= 5:  # transient Gemma/Firestore blips get retried, not dropped
+                    failed = path.parent / "failed"
+                    failed.mkdir(exist_ok=True)
+                    path.rename(failed / path.name)
+                    retries.pop(str(path), None)
         time.sleep(10)
 
 
