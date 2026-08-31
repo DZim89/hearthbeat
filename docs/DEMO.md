@@ -1,5 +1,13 @@
 # DEMO runbook — filming night (Aug 30) + submit morning (Aug 31)
 
+> **REV 2 (00:15 Aug 31): the evening window slipped — the plan's pre-authorized
+> fallback is ACTIVE.** The 6:45 AM production cron is the money shot. House is
+> fully armed autonomously: Local Calendar + helper + approval bridge live,
+> collision seeded (clean), house processes running, stale test actions purged,
+> repo pushed PRIVATE with scrubbed history, Mission Control capture loop armed
+> for 6:43–6:53. If the 6:30 alarm is missed, nothing breaks: film everything at
+> 8:15 pickups off the live Mission Control + Scheduler history + Cloud logs.
+
 Integrity rule, non-negotiable: **the money shot is a real Cloud Scheduler
 firing.** A manual `/trigger` run is labeled `manual` everywhere and is never
 presented as scheduled. Test runs use suffixed run_ids (`2026-08-30-e2eN`) so
