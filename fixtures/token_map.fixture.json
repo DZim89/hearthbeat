@@ -18,6 +18,26 @@
       "aliases": ["Jordan"]
     },
     {
+      "token": "[[P_KID3]]",
+      "kind": "person",
+      "aliases": ["Quinn"]
+    },
+    {
+      "token": "[[P_KID4]]",
+      "kind": "person",
+      "aliases": ["Sam"]
+    },
+    {
+      "token": "[[P_MOM]]",
+      "kind": "person",
+      "aliases": ["Casey", "Casey Hartwell", "Mom"]
+    },
+    {
+      "token": "[[FAMILY]]",
+      "kind": "person",
+      "aliases": ["Hartwell", "Hartwells"]
+    },
+    {
       "token": "[[P_GRANDMA]]",
       "kind": "person",
       "aliases": ["Grandma Pat", "Pat Miller"]

@@ -35,10 +35,11 @@ Then open **http://localhost:8080/missioncontrol** and watch a full run:
 3. Gatherers → planner → policy loop → dispatcher run; a **planted forbidden
    action** (`front_door_unlock`, red team) is refused and written as a denial
    row; real actions land in `pending_actions`.
-4. The (fixture) house pulls them: the kid TV pauses in the `ha-sim` log, the
-   calendar-conflict fix is written, and the "message Grandma" action stops at
-   a **permission slip** (auto-approved after 30 s in judge mode, labeled
-   `judge_auto`).
+4. The (fixture) house pulls them: the calendar-conflict fix event is written
+   to the family calendar and the "message Grandma" action stops at a
+   **permission slip** (auto-approved after 30 s in judge mode, labeled
+   `judge_auto`) before the message is released — all three notifications
+   visible in the `ha-sim` container log.
 
 The hosted, live-against-the-real-house instance is here:
 **https://hearthbeat-369944070051.us-central1.run.app/missioncontrol**
