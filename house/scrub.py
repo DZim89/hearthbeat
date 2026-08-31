@@ -12,8 +12,8 @@ machine and is gitignored. The repo ships a fixture map with invented names
 
 Rehydration (token -> real value) happens exclusively inside the house, in
 house/action_poller.py. The map itself is never uploaded — the cloud holds
-only salted hashes of the aliases (see salted_alias_hashes) so it can DETECT
-a configured-alias leak without being able to reverse anything.
+the configured alias set as salted hashes (see salted_alias_hashes), which the
+egress guard compares against instrumented outbound request text.
 """
 
 from __future__ import annotations
@@ -244,7 +244,7 @@ def scan_hashed(
 ) -> int:
     """Cloud-side: count words/ngrams of text whose salted hash is a known alias hash.
 
-    The cloud holds only hashes — it can detect a leak without learning the alias.
+    The configured alias set is stored as salted hashes rather than plaintext.
     KNOWN tokens are the safe form and are skipped; an UNKNOWN [[...]] (e.g. a
     model-invented [[P_DONNY]]) is unwrapped and scanned as plain text. The word
     regex is unicode-aware so non-ASCII names are not invisible.

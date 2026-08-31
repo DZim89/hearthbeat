@@ -86,10 +86,10 @@ a simulated home run the identical pipeline. Disclosures in README →
 "Honesty ledger".
 
 ## Team / AI disclosure
-Solo build (Donny Zimmerman). AI tools, disclosed: Claude Code (Anthropic) as
-the sole repository writer / coding agent; Codex Desktop (OpenAI) as
-coordinator/acceptance reviewer and thumbnail generator; Gemini-based
-reviewers (geminiclaw / Antigravity) as read-only Google-stack reviewers.
-None of the reviewers authored repository code. All code authored Aug 30–31,
-2026. Pre-existing Home Assistant + local model servers are environment/data
-sources only.
+Solo build (Donny Zimmerman). AI tools, disclosed: Claude Code (Anthropic) and
+Antigravity with Gemini 3.7 Flash High authored implementation and public-copy
+changes under Donny's direction; Codex Desktop (OpenAI) coordinated,
+independently reviewed, generated the thumbnail, and applied final
+claim-discipline corrections; geminiclaw provided read-only Google-stack
+reviews. All code was authored Aug 30–31, 2026. Pre-existing Home Assistant +
+local model servers are environment/data sources only.

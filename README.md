@@ -32,8 +32,9 @@ Then open **http://localhost:8080/missioncontrol** and watch a full run:
 1. The house mirrors a (fixture) home into the Firestore **emulator** and the
    school email is ingested through the double-scrub privacy gateway.
 2. The kickoff container fires the pipeline — honestly labeled
-   `trigger_source: manual`; only the real Cloud Scheduler's OIDC identity can
-   ever produce `scheduled` (that's a feature, see [Run integrity](#run-integrity)).
+   `trigger_source: manual`. `POST /run` authenticates the configured invoker
+   principal via OIDC; Scheduler history and timing corroborate cron origin
+   (see [Run integrity](#run-integrity)).
 3. Gatherers → planner → policy loop → dispatcher run; a **planted forbidden
    action** (`front_door_unlock`, red team) is refused and written as a denial
    row; real actions land in `pending_actions`.
@@ -116,8 +117,9 @@ SELECT * FROM `new-prompt-490003.agent_logs.privacy_tier_v`;       -- Gemma's ca
 We think demo honesty is an architectural property, not an editing choice:
 
 - `POST /run` is the **only application code path** that assigns
-  `trigger_source=scheduled` — and only after validating the caller's OIDC
-  identity against the configured Scheduler service account.
+  `trigger_source=scheduled`, after authenticating the configured invoker
+  principal via OIDC. That label alone does not establish cron origin;
+  Scheduler history and timing provide the corroborating evidence.
 - `POST /trigger` (filming, judge mode) hard-codes `manual`. The badge is on
   Mission Control, the run doc, and every BigQuery row.
 - `run_id = date` with a Firestore `create()` precondition: re-fired crons
@@ -201,16 +203,17 @@ docs/       architecture, demo runbook, the HA automation
 - **The calendar conflict in the demo video was seeded** (soccer practice vs.
   dinner at Grandma's) so the story is legible on camera. The detection,
   planning, refusal, approval, and calendar write are all real and live.
-- **AI assistance**: built with **Claude Code** (Anthropic) as the sole
-  repository writer / coding agent. **Codex Desktop** (OpenAI) served as
-  coordinator and acceptance reviewer and generated the thumbnail image;
-  Gemini-based reviewers (**geminiclaw / Antigravity**) provided read-only
-  Google-stack and innovation review. None of the reviewers authored
-  repository code. The pre-existing Home Assistant installation and local
-  model servers (ollama/vLLM) are environment/data sources, not part of this
+- **AI assistance**: **Claude Code** (Anthropic) and **Antigravity with Gemini
+  3.7 Flash High** authored implementation and public-copy changes under
+  Donny's direction. **Codex Desktop** (OpenAI) coordinated the work,
+  independently reviewed it, generated the thumbnail, and applied final
+  claim-discipline corrections. **geminiclaw** provided read-only Google-stack
+  reviews. The pre-existing Home Assistant installation and local model
+  servers (ollama/vLLM) are environment/data sources, not part of this
   submission's codebase.
 - **Test/demo runs** use suffixed run ids (`YYYY-MM-DD-e2eN`) and
-  `trigger_source=manual` — the scheduled-run footage is a real cron firing.
+  `trigger_source=manual`. For the filmed scheduled run, Scheduler history and
+  timing corroborate cron origin.
 - **The egress guard caught us first.** During the build, the house mirror was
   once run with the fixture map instead of the real one, so real first names
   landed in the (private) Firestore mirror. On the very next cloud run the

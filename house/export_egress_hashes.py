@@ -3,8 +3,8 @@
     python -m house.export_egress_hashes
 
 Prints EGRESS_SALT and EGRESS_ALIAS_HASHES for the Cloud Run service config.
-Only salted SHA-256 hashes leave this machine — the cloud can detect a leaking
-family name without ever holding one."""
+The configured protected-alias set is exported as salted SHA-256 hashes rather
+than as a plaintext alias list."""
 
 from __future__ import annotations
 
