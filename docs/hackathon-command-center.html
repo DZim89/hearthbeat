@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>hearthbeat · Hackathon Command Center</title>
+<style>
+:root{--bg:#12141a;--card:#1c1f27;--line:#2a2e39;--fg:#e8e6e0;--mut:#8b8fa3;--gold:#f0c674;--grn:#7ee08a;--red:#e07e7e;--blu:#7eb8e0}
+@media print{:root{--bg:#fff;--card:#fff;--line:#bbb;--fg:#111;--mut:#555;--gold:#7a5b00;--grn:#1a6b2a;--red:#8a1f1f;--blu:#1f4f8a}.no-print{display:none!important}}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,sans-serif;margin:0;padding:1.5rem;max-width:1100px;margin-inline:auto}
+h1{font-size:1.5rem}h2{color:var(--gold);font-size:1.1rem;margin-top:2rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+table{border-collapse:collapse;width:100%;margin:.6rem 0}
+td,th{border:1px solid var(--line);padding:.45rem .6rem;text-align:left;font-size:.9rem;vertical-align:top}
+th{background:var(--card)}
+.badge{display:inline-block;padding:.1rem .5rem;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.rule{background:#1d3a24;color:var(--grn);border:1px solid #2e6b3a}
+.clar{background:#1d2f3a;color:var(--blu);border:1px solid #2e546b}
+.strat{background:#3a2f1d;color:var(--gold);border:1px solid #6b572e}
+.warn{color:var(--red);font-weight:600}.ok{color:var(--grn)}.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem;margin:.8rem 0}
+#countdown{font-size:1.25rem;font-weight:700}
+input[type=search]{width:100%;padding:.55rem .8rem;font-size:1rem;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px}
+label{display:flex;gap:.5rem;align-items:flex-start;padding:.3rem 0;cursor:pointer}
+input[type=checkbox]{margin-top:.25rem;width:1.05rem;height:1.05rem}
+a{color:var(--blu)}
+kbd{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:0 .3rem;font-size:.85em}
+section[hidden]{display:none}
+.legend span{margin-right:.6rem}
+</style>
+</head>
+<body>
+<h1>🫀 hearthbeat · Hackathon Command Center</h1>
+<p class="mut">All Things Agentic Hackathon (Devpost) · self-contained reference — no network calls, no analytics, no household data. Print-safe. <kbd>/</kbd> focuses search.</p>
+
+<div class="card" role="status" aria-live="polite">
+  <div id="countdown">countdown…</div>
+  <div class="mut">Submit target 12:30 PM PT · internal hard ceiling 1:00 PM PT · Devpost deadline 5:00 PM PT (Aug 31, 2026, PDT). Disaster valve only past 1 PM.</div>
+</div>
+
+<p class="legend">
+  <span class="badge rule">BINDING RULE</span> from the verified rulebook in the accepted mission brief ·
+  <span class="badge clar">CLARIFICATION / VERIFY</span> not independently verified — confirm on the Devpost page/form before relying ·
+  <span class="badge strat">OUR STRATEGY</span> our choice, not a rule
+</p>
+
+<input type="search" id="q" placeholder="Search rules, rubric, claims… ( / )" aria-label="Search this page">
+
+<section id="rules">
+<h2>Rules &amp; requirements</h2>
+<table>
+<tr><th>Area</th><th>Status</th><th>What we hold</th></tr>
+<tr><td>Mandatory tech — all three</td><td><span class="badge rule">BINDING RULE</span></td><td>(1) Gemini 3.5+ via Gemini API or Vertex AI; (2) a listed Google agent framework — <b>Google ADK</b> (LangChain / Agent Engine do NOT count); (3) Google Cloud infra. Ours: gemini-3.5-flash + flash-lite on Vertex (location=global); ADK Sequential/Parallel/Loop/custom BaseAgents/BasePlugin; Cloud Run, Cloud Scheduler, Pub/Sub+DLQ, Firestore, BigQuery.</td></tr>
+<tr><td>Build period</td><td><span class="badge rule">BINDING RULE</span></td><td>All code written Aug 30–31. Repo history starts Aug 30 (scaffold commit) — verifiable in git. Pre-existing Home Assistant + local model servers are environment/data sources, disclosed.</td></tr>
+<tr><td>Submission artifacts (Stage One pass/fail)</td><td><span class="badge rule">BINDING RULE</span></td><td>Text description · public video ≤4:00 (EN captions, on-screen Google Cloud proof) · public repo URL · architecture diagram · README setup guide incl. one-command judge mode · hosted public URL · exactly ONE category.</td></tr>
+<tr><td>Category</td><td><span class="badge strat">OUR STRATEGY</span></td><td><b>The Taskmaster</b>, firm (accepted decision). Exactly one on the form.</td></tr>
+<tr><td>Judging</td><td><span class="badge rule">BINDING RULE</span></td><td>40% innovation/operational utility ("the Twist": autonomous, background, beyond chat) · 30% architectural discipline (decoupling, state, security) · 30% demo/production readiness.</td></tr>
+<tr><td>Prizes</td><td><span class="badge clar">VERIFY</span></td><td>Per brief: Taskmaster $20k (one winner); Individual/Hobbyist Best Solo Build $10k (two winners) IF the form exposes it. Confirm amounts/categories on Devpost.</td></tr>
+<tr><td>Bonuses (to +0.6)</td><td><span class="badge rule">BINDING RULE</span></td><td>Gemma as a load-bearing local tier (✅ ours: gemma3/ollama in every email ingest) · dev.to build log (draft ready) · #AllThingsAgenticHackathon post (draft ready).</td></tr>
+<tr><td>Post-submission obligations</td><td><span class="badge rule">BINDING RULE</span></td><td>Project stays free, public, unmodified through <b>Oct 1</b>. No pushes after submit.</td></tr>
+<tr><td>AI-assistance disclosure</td><td><span class="badge rule">BINDING RULE</span></td><td>AI coding assistants permitted WITH disclosure — README "Honesty ledger" discloses Claude Code.</td></tr>
+<tr><td>Eligibility / licensing &amp; IP / disqualification / judging availability</td><td><span class="badge clar">VERIFY</span></td><td>Not captured in the verified brief — read these sections on the Devpost rules page during the 11:15 form pass before submitting. Do not rely on assumptions.</td></tr>
+<tr><td>Repo access</td><td><span class="badge rule">BINDING RULE</span></td><td>Public at submit (currently PRIVATE by strategy until final scans at 10:45). Judge mode must work from a clean clone with zero credentials.</td></tr>
+</table>
+</section>
+
+<section id="checklist">
+<h2>Devpost submission checklist <span class="mut">(saved locally in this browser)</span></h2>
+<div class="card" id="steps">
+  <label><input type="checkbox" data-k="s1"> <span><b>1 · Artifacts final:</b> video uploaded PUBLIC w/ captions ≤4:00 · repo public after scans · hosted Mission Control loads logged-out · diagram in repo · EVIDENCE.md filled.</span></label>
+  <label><input type="checkbox" data-k="s2"> <span><b>2 · Form recon:</b> open the form, read eligibility/IP/disqualification sections, note char limits → annotate SUBMISSION.md.</span></label>
+  <label><input type="checkbox" data-k="s3"> <span><b>3 · Fill &amp; save-draft per section:</b> paste from SUBMISSION.md; category = The Taskmaster only; include the scheduled-run permalink (?run=2026-08-31).</span></label>
+  <label><input type="checkbox" data-k="s4"> <span><b>4 · Bonuses:</b> dev.to published + hashtag post live → links into the form.</span></label>
+  <label><input type="checkbox" data-k="s5"> <span><b>5 · Final sweep &amp; SUBMIT ≤12:30:</b> every link tested logged-out/incognito; confirmation screenshot saved.</span></label>
+</div>
+</section>
+
+<section id="rubric">
+<h2>Rubric ⇄ evidence matrix</h2>
+<table>
+<tr><th>Rubric slice</th><th>Evidence</th><th>Where</th></tr>
+<tr><td rowspan="3">40% innovation / operational utility</td><td>Real scheduled run, no human input, real household consequences</td><td>Uncut core (video) · Mission Control ?run=2026-08-31 · Scheduler history</td></tr>
+<tr><td>No chat UI anywhere; interfaces = cron, read-only page, phone</td><td>README "Why no chat" · the product itself</td></tr>
+<tr><td>Human permission slips for person-touching actions</td><td>Pickup P3 · permission_slips flow · policy.yaml sensitive_targets</td></tr>
+<tr><td rowspan="4">30% architectural discipline</td><td>ADK composition w/ plan-hash-bound critic loop</td><td>app/agent.py · ARCHITECTURE.md · pickup P2</td></tr>
+<tr><td>Default-deny policy enforced 3× (loop, dispatch, house)</td><td>app/policy.py + tests · red-team denial rows (P4)</td></tr>
+<tr><td>Privacy: map→local Gemma→map→assert_clean + salted-hash cloud guard</td><td>house/scrub.py, house/privacy_gateway.py · privacy_tier_v · P5</td></tr>
+<tr><td>Durability: date-keyed idempotency, checkpoints, tested kill→takeover→resume</td><td>app/runcontrol.py · run doc attempt=2 drill evidence</td></tr>
+<tr><td rowspan="3">30% demo / production readiness</td><td>Live Cloud Run + real cron w/ SUCCESS history</td><td>Console (P6) · hosted URL</td></tr>
+<tr><td>One-command judge mode from clean clone, zero credentials</td><td>docker-compose.yml · README quickstart · P6</td></tr>
+<tr><td>BigQuery ledger: per-run cost, denials, egress checks + DLQ</td><td>infra/bq_views.sql · runs_v/denials_v/egress_violations_v</td></tr>
+</table>
+</section>
+
+<section id="stack">
+<h2>Mandatory-stack proof (paths)</h2>
+<table>
+<tr><th>Requirement</th><th>Proof in repo / cloud</th></tr>
+<tr><td>Gemini 3.5+ (Vertex)</td><td>app/models.py (model ids, location=global) · infra/canary.py output · model_usage events in BQ</td></tr>
+<tr><td>Google ADK (listed framework)</td><td>app/agent.py (SequentialAgent/ParallelAgent/LoopAgent) · app/policy_gate.py + app/dispatcher.py (custom BaseAgents) · app/ledger.py (BasePlugin) · pyproject google-adk pin</td></tr>
+<tr><td>Google Cloud</td><td>Cloud Run service (sa-home) · Cloud Scheduler hearth-morning · Pub/Sub agent-events + agent-events-dlq · Firestore collections · BigQuery agent_logs + views (infra/setup.sh provisions all)</td></tr>
+<tr><td>Bonus: Gemma load-bearing</td><td>house/privacy_gateway.py deep_scrub → every school-email ingest · privacy_tier_v rows (tier=gemma)</td></tr>
+</table>
+</section>
+
+<section id="video">
+<h2>4-minute video timeline (target 3:50)</h2>
+<table>
+<tr><th>Segment</th><th>Length</th><th>Label</th></tr>
+<tr><td>P1 cold open</td><td>0:20</td><td>PICKUP</td></tr>
+<tr><td>P2 architecture</td><td>0:25</td><td>PICKUP</td></tr>
+<tr><td><b>Uncut core: Scheduler fire → SA identity → Mission Control progression → autonomous TV pause + briefing</b></td><td>~1:00</td><td><b>LIVE — UNCUT · run 2026-08-31</b></td></tr>
+<tr><td>P3 permission slip + calendar continuation</td><td>0:30</td><td>PICKUP (same run id)</td></tr>
+<tr><td>P4 red-team refusal</td><td>0:25</td><td>PICKUP (labeled manual run)</td></tr>
+<tr><td>P5 Gemma / privacy / egress evidence</td><td>0:30</td><td>PICKUP</td></tr>
+<tr><td>P6 console proof + judge mode</td><td>0:25</td><td>PICKUP (judge-mode run id)</td></tr>
+<tr><td>P7 close</td><td>0:15</td><td>PICKUP</td></tr>
+</table>
+</section>
+
+<section id="claims">
+<h2>Claim discipline — say / narrow / never</h2>
+<table>
+<tr><th class="ok">SAFE (say it)</th><th>NARROWED (exact phrasing)</th><th class="warn">FORBIDDEN</th></tr>
+<tr>
+<td>"A real Cloud Scheduler cron fired this run — the badge is earned by the scheduler's service-account identity."</td>
+<td>"Authenticated as the dedicated Scheduler service account." (not "cryptographically impossible to fake")</td>
+<td>"Cannot ever be spoofed / universal cryptographic origin."</td>
+</tr>
+<tr>
+<td>"Zero protected-alias matches in the filmed run."</td>
+<td>"The violations table's only historical rows are the guard blocking our own build mistake — kept deliberately."</td>
+<td>"Zero PII ever left" / "the egress table is empty."</td>
+</tr>
+<tr>
+<td>"Action creation is idempotent — kill mid-run, re-fire, zero duplicates in our tested retry paths."</td>
+<td>"Under the tested retry paths" qualifier stays attached.</td>
+<td>"Exactly-once, guaranteed, always."</td>
+</tr>
+<tr>
+<td>"One command from a clean clone, zero credentials."</td>
+<td>No fixed seconds figure unless two fresh uncached clones prove it.</td>
+<td>"Runs in 90 seconds" (unproven on judge hardware).</td>
+</tr>
+<tr>
+<td>"Deterministic token map → direct local Gemma pass → map again → assert-clean."</td>
+<td>"An ADK AgentTool factory is also exported (optional); the enforcement path invokes Gemma directly."</td>
+<td>"The privacy guarantee is an ADK agent tool."</td>
+</tr>
+<tr>
+<td>"On approval, the drafted message is released to the household notification channel; a proposed calendar event is created."</td>
+<td>"It proposes and drafts; humans stay the channel to third parties."</td>
+<td>"It texts Grandma / moves or deletes the original event."</td>
+</tr>
+</table>
+</section>
+
+<section id="links">
+<h2>Final links</h2>
+<table>
+<tr><td>Repo (public at submit)</td><td>https://github.com/DZim89/hearthbeat</td></tr>
+<tr><td>Hosted Mission Control</td><td>https://hearthbeat-369944070051.us-central1.run.app/missioncontrol</td></tr>
+<tr><td>Scheduled-run permalink</td><td>https://hearthbeat-369944070051.us-central1.run.app/missioncontrol?run=2026-08-31</td></tr>
+<tr><td>Video</td><td class="mut">«fill after upload»</td></tr>
+<tr><td>dev.to build log</td><td class="mut">«fill after publish»</td></tr>
+<tr><td>Social post</td><td class="mut">«fill after post»</td></tr>
+</table>
+</section>
+
+<section id="log">
+<h2>Checkpoint log</h2>
+<table>
+<tr><th>When (PT)</th><th>Checkpoint</th></tr>
+<tr><td>Aug 30 16:0x</td><td>Gate probes PASSED (gemini-3.5-flash @ global only); plan GO.</td></tr>
+<tr><td>Aug 30 ~17:00</td><td>Deployed to Cloud Run; cloud E2E done; cron + OIDC dry-fire proven (`trigger_source=scheduled`).</td></tr>
+<tr><td>Aug 30 evening</td><td>85-agent adversarial review → 22 findings fixed (2 critical: history name leak → filter-repo rewrite; scrub boundary gap → substring + token-vocabulary guards). Judge fixtures re-recorded clean; judge mode proven from clean clone.</td></tr>
+<tr><td>Aug 31 00:0x</td><td>Evening window slipped → 6:45 cron is the money shot; house armed autonomously; repo pushed PRIVATE.</td></tr>
+<tr><td>Aug 31 00:5x</td><td>Codex checkpoint slice: thumbnail (3:2 ✓), pricing corrected (no absolute cost claims), claims narrowed, video restructured (uncut core + labeled pickups), DEMO reduced, EVIDENCE capsule, this page.</td></tr>
+</table>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  // countdown — PDT is fixed UTC-7 on this date
+  var deadline = new Date("2026-08-31T17:00:00-07:00").getTime();
+  var internal = new Date("2026-08-31T13:00:00-07:00").getTime();
+  var target   = new Date("2026-08-31T12:30:00-07:00").getTime();
+  function fmt(ms){ if(ms<0) return "PASSED";
+    var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60);
+    return h+"h "+(m<10?"0":"")+m+"m"; }
+  function tick(){
+    var now=Date.now(), el=document.getElementById("countdown");
+    el.textContent = "Submit target 12:30 → "+fmt(target-now)
+      + "  ·  internal 1:00 PM ceiling → "+fmt(internal-now)
+      + "  ·  Devpost 5:00 PM → "+fmt(deadline-now);
+    el.style.color = (internal-now) < 90*60*1000 ? "var(--red)" : "var(--grn)";
+  }
+  tick(); setInterval(tick, 30000);
+
+  // checklist persistence (per-browser convenience; fails safe)
+  var KEY="hearthbeat-devpost-checklist";
+  var boxes=document.querySelectorAll("#steps input[type=checkbox]");
+  try{ var saved=JSON.parse(localStorage.getItem(KEY)||"{}");
+       boxes.forEach(function(b){ b.checked=!!saved[b.dataset.k]; }); }catch(e){}
+  boxes.forEach(function(b){ b.addEventListener("change",function(){
+    try{ var s={}; boxes.forEach(function(x){ s[x.dataset.k]=x.checked; });
+         localStorage.setItem(KEY,JSON.stringify(s)); }catch(e){} }); });
+
+  // search — hides non-matching sections' rows
+  var q=document.getElementById("q");
+  document.addEventListener("keydown",function(e){
+    if(e.key==="/" && document.activeElement!==q){ e.preventDefault(); q.focus(); }});
+  q.addEventListener("input",function(){
+    var t=q.value.trim().toLowerCase();
+    document.querySelectorAll("section table tr").forEach(function(tr,i){
+      if(tr.querySelector("th")) return;
+      tr.hidden = t!=="" && tr.textContent.toLowerCase().indexOf(t)===-1;
+    });
+    document.querySelectorAll("section").forEach(function(sec){
+      var rows=sec.querySelectorAll("table tr:not([hidden])");
+      sec.hidden = t!=="" && sec.querySelector("table") && rows.length<=1 && !sec.textContent.toLowerCase().includes(t);
+    });
+  });
+})();
+</script>
+</body>
+</html>

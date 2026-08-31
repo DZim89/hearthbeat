@@ -74,7 +74,9 @@ family (the thing it knows), Gemma catches strangers' PII the map cannot know
 missed. Cloud-side, the LedgerPlugin's `before_model_callback` scans every
 outbound model request against **salted hashes** of the protected names — the
 cloud can prove nothing leaked without ever holding plaintext. BigQuery view
-`egress_violations_v` returning zero rows is the standing proof.
+`egress_violations_v` shows zero protected-alias matches for every legitimate
+run (its only historical rows are the guard blocking our own build mistake —
+kept deliberately).
 
 **4. Pull, never push.** The house exposes no webhook, no tunnel, no inbound
 socket. Actions flow: Dispatcher → Firestore `pending_actions` → poller claims
@@ -96,7 +98,7 @@ re-fired crons no-op (done), 409 (fresh heartbeat), or transactionally take
 over (stale). Each of the four stages checkpoints its state slice; a resumed
 run rebuilds the ADK tree from only the unfinished stages and seeds session
 state from the checkpoints. Action docs are content-hashed and `create()`d:
-double-dispatch is structurally impossible.
+re-dispatch is idempotent under the tested retry paths (mid-run kill + re-fire).
 
 ## Judge mode
 

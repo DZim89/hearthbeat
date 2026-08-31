@@ -13,9 +13,11 @@ Google ADK, Gemini 3.5 on Vertex AI, and Cloud Run / Cloud Scheduler /
 Pub/Sub / Firestore / BigQuery — plus a load-bearing **local Gemma 3** privacy
 tier running inside the house.
 
+![hearthbeat](docs/hearthbeat-thumbnail.png)
+
 ---
 
-## Judges: run the whole thing in 90 seconds
+## Judges: run the whole thing with one command
 
 Requires only Docker (no Google account, no credentials, no house):
 
@@ -43,8 +45,8 @@ Then open **http://localhost:8080/missioncontrol** and watch a full run:
 
 The hosted, live-against-the-real-house instance is here:
 **https://hearthbeat-369944070051.us-central1.run.app/missioncontrol**
-*(read-only; it shows whatever this morning's real run did — in token space,
-because real names never reach the cloud at all).*
+*(read-only; it shows whatever this morning's real run did — in token space:
+the runtime privacy path keeps real names inside the house).*
 
 ---
 
@@ -95,7 +97,7 @@ Real names live only inside the house. Three independent layers:
 |---|---|---|
 | Deterministic token map | house | `Riley → [[P_KID1]]`, applied **before and after** the model pass; `assert_clean` hard-fails on any survivor. The real map is gitignored — this repo ships a fixture family. |
 | **Local Gemma 3** (ollama) | house | Catches PII the family map cannot know — a teacher's name and phone number in a school email. Falls back to a local qwen server (`PRIVACY_TIER=qwen`) and the ledger records which tier did each pass. |
-| Salted-hash egress guard | cloud | `before_model_callback` scans every outbound Vertex request against salted SHA-256 hashes of the protected names. The cloud proves nothing leaked **without ever holding a name in plaintext**. A match blocks the model call and fails the run. |
+| Salted-hash egress guard | cloud | `before_model_callback` scans every outbound Vertex request against salted SHA-256 hashes of the protected names — the cloud can detect a leak **without ever holding a name in plaintext**. A match blocks the model call and fails the run. |
 
 Standing proof in BigQuery:
 
@@ -115,9 +117,9 @@ We think demo honesty is an architectural property, not an editing choice:
 - `POST /trigger` (filming, judge mode) hard-codes `manual`. The badge is on
   Mission Control, the run doc, and every BigQuery row.
 - `run_id = date` with a Firestore `create()` precondition: re-fired crons
-  no-op or resume from stage checkpoints; content-hashed action docs make
-  double-dispatch structurally impossible (kill the service mid-run and
-  re-fire it — we did, on camera).
+  no-op or resume from stage checkpoints; content-hashed `create()` makes
+  action dispatch idempotent under the retry paths we tested (we killed the
+  service mid-run and re-fired it; zero duplicates).
 
 ## The action path (pull, never push)
 
@@ -126,7 +128,9 @@ claims approved actions from Firestore by transaction, **rehydrates the tokens
 locally**, re-validates against the same `config/policy.yaml` (the third
 enforcement of the same default-deny whitelist), and executes in Home
 Assistant. Anything targeting a person stops at a `permission_slip` until a
-human taps Approve on an HA companion-app notification — human approval also
+human taps Approve on an HA companion-app notification; on approval the
+drafted message is released to the configured household notification channel
+(hearthbeat does not message the recipient directly). Human approval also
 lifts quiet-hours for that action, because a tap is consent.
 
 ## Required tech, mapped
@@ -136,7 +140,8 @@ lifts quiet-hours for that action, because a tap is consent.
 - **Google ADK** — `SequentialAgent`, `ParallelAgent`, `LoopAgent`, custom
   `BaseAgent`s (PolicyGate/Dispatcher), `output_schema` structured outputs,
   a `BasePlugin` for lifecycle observability, `LiteLlm` for the house-side
-  Gemma agent (exported as an `AgentTool`).
+  Gemma agent (also exported as an `AgentTool` factory — the enforcement path
+  invokes Gemma directly and deterministically).
 - **Google Cloud** — Cloud Run (service, runs as `sa-home`), Cloud Scheduler
   (OIDC-authenticated cron), Pub/Sub (+ DLQ, native BigQuery subscription),
   Firestore (runs/checkpoints/actions/slips + the house mirror), BigQuery
@@ -208,6 +213,7 @@ docs/       architecture, demo runbook, the HA automation
 
 ## Cost
 
-A full run is **~1.7¢** (BigQuery-audited, `runs_v.cost_cents`). The policy
+Every run is priced to the microcent in BigQuery (`runs_v.cost_cents`) and shown
+on Mission Control — that per-run figure is the authoritative cost number. The policy
 engine enforces a 50¢/day budget ceiling mid-run — the agent literally refuses
 its own plan if it would blow the budget.

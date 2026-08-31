@@ -28,7 +28,9 @@ revision it graded. A pure-code dispatcher writes content-hashed action docs
 to Firestore. Then the house takes over: a poller inside the home PULLS the
 actions, rehydrates the privacy tokens locally, re-validates the policy a
 third time, and executes in Home Assistant. Anything that touches a person
-stops at a permission slip on a real phone — Approve or Deny.
+stops at a permission slip on a real phone — Approve or Deny; approval
+releases the drafted message to the household notification channel (it never
+messages the recipient directly).
 
 **The twist.** There is no chat window. No prompt box. The interfaces are a
 cron, a read-only Mission Control page, a briefing that lands on a phone, and
@@ -41,7 +43,9 @@ strangers' PII the map can't know — a teacher's name and phone in a school
 email — and a hard `assert_clean` gate fails the pipeline if either missed.
 In the cloud, every outbound Vertex request is scanned against **salted
 hashes** of the protected names; a match blocks the model call. BigQuery's
-standing verdict: `egress_violations_v` = 0 rows. (During the build this
+standing verdict: zero protected-alias matches in every legitimate run — the
+only rows the violations view has ever held are the guard blocking our own
+build mistake, kept and shown separately. (During the build this
 guard caught a genuinely misconfigured mirror and refused to talk to Gemini —
 we kept the story in the README.)
 
@@ -49,16 +53,17 @@ we kept the story in the README.)
 code path — `/run`, behind in-app OIDC verification of the scheduler's
 service-account identity. Filming and judge runs are labeled `manual`,
 structurally. Runs are date-keyed with Firestore `create()` preconditions,
-stage-checkpointed, and resumable: kill it mid-run, re-fire it, and it
-finishes without duplicating a single action.
+stage-checkpointed, and resumable: under the retry paths we tested (kill
+mid-run, re-fire), it finishes without duplicating a single action.
 
 **Built with.** Google ADK (SequentialAgent / ParallelAgent / LoopAgent /
 custom BaseAgents / BasePlugin / structured outputs / LiteLlm+AgentTool),
 Gemini 3.5 Flash + Flash-Lite on Vertex AI (location=global), Cloud Run,
 Cloud Scheduler (OIDC), Pub/Sub + DLQ with a native BigQuery subscription,
 Firestore, BigQuery, and local Gemma 3 as a load-bearing privacy tier.
-A full run costs ~1.5¢, audited in BigQuery, with a 50¢/day budget the policy
-engine enforces mid-run.
+Every run's cost is computed to the microcent from list rates and audited in
+BigQuery (`runs_v.cost_cents`, shown on Mission Control), with a 50¢/day budget
+the policy engine enforces mid-run.
 
 ## Built with (tags)
 google-adk, gemini, vertex-ai, cloud-run, cloud-scheduler, pub-sub, firestore,
@@ -69,6 +74,7 @@ bigquery, gemma, ollama, python, fastapi, home-assistant, docker
 - Hosted (read-only Mission Control): https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 - Video (public YouTube, ≤4:00, EN captions): «FILL AFTER UPLOAD»
 - Architecture diagram: in repo — docs/architecture.png (+ docs/ARCHITECTURE.md)
+- Gallery thumbnail (3:2): docs/hearthbeat-thumbnail.png
 - dev.to build log (bonus): «FILL»
 - Social post w/ #AllThingsAgenticHackathon (bonus): «FILL»
 

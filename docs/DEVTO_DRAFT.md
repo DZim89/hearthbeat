@@ -95,9 +95,11 @@ free emulator exists (BigQuery → JSONL), each disclosed.
 
 ## Numbers
 
-- Full run: **~1.5¢**, BigQuery-audited (`runs_v.cost_cents`); a 50¢/day
+- Full run: single-digit cents, BigQuery-audited to the microcent
+  (`runs_v.cost_cents`); a 50¢/day
   budget is enforced *mid-run* by the policy engine.
-- `egress_violations_v`: **0 rows**.
+- `egress_violations_v`: zero protected-alias matches on every legitimate run
+  (its only rows ever: the guard catching our own misconfigured mirror).
 - Unit tests: the scrub round-trip and policy table tests are the graded core.
 
 Repo: https://github.com/DZim89/hearthbeat · Mission Control (live,
