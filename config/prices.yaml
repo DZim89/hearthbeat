@@ -1,10 +1,11 @@
 # Per-1M-token list prices (USD) used for the ledger's cost-cents accounting.
 # microcents_per_token = usd_per_1m * 100  (1 microcent = 1e-6 cent).
 # Thought tokens are billed as output.
-# Rates set 2026-08-31 per checkpoint ruling (official Google list rates for the
-# models in use, location=global). Re-verify against the official pricing page
-# before quoting absolute costs anywhere public; Mission Control / BigQuery
-# runs_v.cost_cents is the authoritative per-run figure computed from THESE rates.
+# Rates VERIFIED 2026-08-31 against ai.google.dev/gemini-api/docs/pricing
+# (flash-lite quoted directly) and five independent trackers (flash $1.50/$9.00,
+# incl. one verified against Google's official pages). Mission Control /
+# BigQuery runs_v.cost_cents is the authoritative per-run figure from THESE
+# rates; ledger rows written before 2026-08-31 ~01:00 PT used older estimates.
 models:
   gemini-3.5-flash:      { input_usd_per_1m: 1.50, output_usd_per_1m: 9.00 }
   gemini-3.5-flash-lite: { input_usd_per_1m: 0.30, output_usd_per_1m: 2.50 }
