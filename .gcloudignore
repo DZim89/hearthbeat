@@ -6,6 +6,8 @@
 *.docx
 # Hearthbeat Taskmaster Winning Plan.docx
 Markdown # Hearthbeat Taskmaster Winning Plan.docx
+/*.md
+*.md
 .env
 .env.*
 house/.env

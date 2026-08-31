@@ -5,7 +5,7 @@ RUN pip install --no-cache-dir uv==0.8.13
 WORKDIR /code
 
 # Dependency layer first (cache-friendly)
-COPY ./pyproject.toml ./README.md ./uv.lock* ./
+COPY ./pyproject.toml ./uv.lock* ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 # Application code
