@@ -1,16 +1,53 @@
 # Devpost submission mirror — every field, paste-ready
 
-> Char limits get verified against tonight's form-recon screenshots and
-> annotated here before the 11:15 AM fill. Save draft after every section.
+> Live form requirements verified against submission `1162918` on August 31,
+> 2026. Save the draft after every section; do not click the final submit
+> button until the complete preview and every anonymous link are verified.
 
 ## Project name
-hearthbeat
+Hearthbeat
 
 ## Elevator pitch (≤200 chars — verified 183)
 A no-chat household agent that turns school email and calendars into a safe morning plan—acting autonomously when confidence is high and asking only when a human decision is required.
 
 ## Category (exactly one)
-**The Taskmaster**
+**Taskmaster**
+
+## Project overview media
+
+- Thumbnail: `docs/hearthbeat-thumbnail.png` (1536×1024, 3:2, under 5 MB)
+
+## Required additional information
+
+- Sponsor / Special Prizes: leave unselected (not entering Startup Excellence)
+- Submitter Type: **Individuals**
+- Submitter country of residence: **United States**
+- Organization name: **Not applicable — individual submission**
+- Project start date: **08-30-26** (oldest reachable commit: 2026-08-30)
+- Code repository: https://github.com/DZim89/hearthbeat
+- Reproducible Testing instructions in README: **Yes**
+- Hosted project URL: https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
+- Google SDKs: **Agent Development Kit (ADK)**; **Google GenAI SDK (google-genai)**
+- Google Cloud services offered by the form: **Cloud Run**; **Firestore**;
+  **Pub/Sub**. The story and tags additionally disclose Cloud Scheduler,
+  BigQuery, and Vertex AI.
+- Architecture diagram upload: `docs/architecture.png`
+- Startup-prize organization and corporate-email fields: leave blank
+- Google AI models: **Gemini 3.5 Flash; Gemini 3.5 Flash-Lite; Gemma 3
+  (local through Ollama)**
+- Bonus content URL: fill after the public DEV Community article is published
+- Bonus social URL: fill after the public post containing the exact hashtag
+  `#AllThingsAgenticHackathon` is published
+
+### Private testing instructions field
+
+Clone the repository and follow README → “Judges: run the whole thing with
+one command.” The
+credential-free path uses disclosed fixtures, the Firestore emulator, recorded
+model responses, and a simulated home. Run `SIMULATED_HOME=1 docker compose
+up`, then open `http://localhost:8080/missioncontrol`. The hosted Mission
+Control URL is public and read-only; no credentials are required. The live
+cloud evidence uses run ID `2026-08-31`.
 
 ## Text description (long form)
 

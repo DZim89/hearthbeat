@@ -6,7 +6,7 @@ UNCUT" badge with the run id; every other beat is a labeled "PICKUP" tied to
 the same run id (or explicitly to the judge-mode run). Captions burned-in AND
 uploaded as .srt.
 
-## The uncut core (one continuous take, ~60s of the video)
+## The uncut core (one continuous take, target 90–105s of the video)
 
 **"LIVE — UNCUT · run 2026-08-31 · scheduled"** on screen throughout.
 Continuous screen/camera capture, no cuts:
@@ -42,6 +42,8 @@ argue with itself, dispatch, and the house quietly act."
 - The "LIVE — UNCUT" badge appears ONLY on the continuous take; everything
   else carries a PICKUP badge. Nothing implies the pickups happened inside the
   uncut segment.
+- Upload the final demo as **publicly visible** on YouTube or Vimeo. Private
+  and unlisted visibility do not satisfy the live Devpost submission gate.
 - All run-scoped claims cite the run id on screen.
 - No absolute cost figure in VO; Mission Control's per-run figure is visible.
 - Final frame-scan for PII before upload (terminal text included).

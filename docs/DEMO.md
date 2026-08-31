@@ -5,24 +5,33 @@ Integrity rule: the money shot is the REAL 6:45 AM Cloud Scheduler firing
 structurally and are never presented as scheduled. Test runs use suffixed run
 ids.
 
-## Current state (00:45 AM)
-- House fully armed autonomously: Local Calendar (`calendar.hearthbeat_family`)
-  + approval helper + bridge automation live; the disclosed collision seeded
-  (two events, clean); house processes (mirror / ingest / poller) running;
-  stale test actions purged; `runs/2026-08-31` verified unclaimed.
-- Deployed revision carries all 22 review fixes; final cloud E2E `done`.
-- Repo pushed PRIVATE (history PII-scrubbed, verified `git log -S` clean).
-- Capture: session wake scheduled 6:44 → Mission Control snapshots + run-doc,
-  scheduler-state, and BigQuery evidence saved to `data/capture/`.
+## Verified pre-run state (03:18 AM)
+- Local Calendar (`calendar.hearthbeat_family`), approval helper, bridge
+  automation, and the disclosed collision fixture were provisioned earlier.
+  Revalidate the house poller, phone path, and demo fixture at 6:35 before
+  recording; `runs/2026-08-31` was verified unclaimed at this checkpoint.
+- Cloud Run revision `hearthbeat-00015-rt7` serves 100% traffic; `/health` and
+  run-scoped Mission Control return HTTP 200; Scheduler remains enabled for
+  `45 6 * * *` in `America/Los_Angeles`.
+- Repo pushed PRIVATE. The current tracked tree passes the protected-alias and
+  source-context scans, but the one-time noreply history rewrite is still a
+  required public-release gate.
+- Evidence backup: Windows task `hearth-20260831-mc-snapshots-win` is scheduled
+  for 6:44, can wake the machine, and writes 20 run-scoped Mission Control HTML
+  snapshots to gitignored `data/evidence/cron645/`. Its HTTP/path preflight
+  passed. These snapshots are evidence backup, **not video footage**.
 
-## 6:45 AM — the scheduled run (live footage optional)
-- If awake (alarm 6:30): camera on GCP Scheduler console + phone from 6:43;
-  film the UNCUT CORE per docs/VIDEO_SCRIPT.md.
-- If not: nothing breaks. The run executes; Mission Control keeps displaying
-  it all morning; Cloud Logging holds the fire-time logs; Scheduler history
-  shows SUCCESS — the uncut core is then screen-captured live at pickups
-  (Mission Control + logs are still the real scheduled run; only room b-roll
-  is lost).
+## 6:45 AM — the scheduled run (live footage required for the money shot)
+- Be ready by 6:35. Start the continuous capture no later than 6:43 with the
+  GCP Scheduler job, a visible clock, Cloud Run logs, Mission Control, and the
+  public-safe phone consequence arranged before recording begins.
+- Film the uninterrupted core per `docs/VIDEO_SCRIPT.md`; do not stop, splice,
+  or change sources inside that segment. The background HTML snapshots will
+  preserve evidence but cannot replace this recording.
+- If the scheduled firing is missed or fails, use the Cloud Scheduler
+  console's authenticated manual-run action as the truthful backup and label
+  the resulting take **manual**. Never relabel a post-run dashboard tour or a
+  manual recovery as an uncut scheduled execution.
 
 ## 8:15–9:15 — pickups (see VIDEO_SCRIPT pickup table)
 Red-team labeled manual run; Gemma terminal beat; permission-slip tap +
