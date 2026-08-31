@@ -1,30 +1,26 @@
-# Social post draft (X/LinkedIn — bonus artifact)
+# LinkedIn post - final publication copy
 
----
+In one compressed hackathon sprint, I built something I genuinely wish existed:
+a household agent that lowers the mental load without becoming one more chat
+window to manage. 🫀
 
-My house now runs its own morning standup. 🫀
+Hearthbeat turns school email, calendars, and home state into a safe morning
+plan. It acts when policy permits, asks when a human decision is required, and
+refuses forbidden actions. The public demo uses disclosed fictional fixtures
+and tokenized identities.
 
-No chat UI — a Cloud Scheduler cron fires a Google ADK pipeline (parallel
-gatherers → Gemini 3.5 planner → a LoopAgent policy critic that argues with
-the plan) on Cloud Run. My phone gets a permission slip before a person-facing
-draft can be released to the household notification channel. The house PULLS
-its actions — the cloud can't reach in.
+Built as personal R&D for the All Things Agentic Hackathon, Hearthbeat combines
+Google ADK and Gemini 3.5 on Vertex AI with Cloud Run, Cloud Scheduler,
+Firestore, Pub/Sub, BigQuery, and a local Gemma privacy tier.
 
-The part I'm proudest of: on the filmed path, configured family aliases are
-tokenized locally; a local Gemma/Qwen tier scans additional PII; and
-instrumented Gemini calls pass a salted-hash protected-alias guard. That guard
-once refused a call because I misconfigured a mirror. BigQuery shows zero
-protected-alias matches in the filmed run — a query, not a promise.
+I also used my home-built AI Agent Fleet Workspace to coordinate research,
+implementation, review, and evidence across several AI surfaces. That helped me
+move quickly without giving up the safety gates or the proof.
 
-One command for the whole demo from a clean clone:
-SIMULATED_HOME=1 docker compose up
+The part I am proudest of is not how often it acts. It is knowing when to act,
+when to ask, and when to refuse.
 
-Repo: https://github.com/DZim89/hearthbeat
-Live Mission Control: https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
+Live, read-only Mission Control:
+https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
-Built solo from a first commit at 4:07:10 PM PDT on August 30 for the All
-Things Agentic Hackathon — category: The Taskmaster — using my home-grown AI
-Agent Fleet Workspace with Claude Code, Gemini/Antigravity, Codex, and
-geminiclaw under my direction and evidence gates.
-
-#AllThingsAgenticHackathon
+#AllThingsAgenticHackathon #AgenticAI #GoogleCloud #Gemini

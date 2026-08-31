@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hearthbeat - Devpost Pasteboard</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#07101f;--panel:#0d1a2d;--panel2:#101f36;--line:#243b5b;
+  --text:#f7f1e7;--muted:#9fb0c8;--cyan:#57e6ff;--orange:#ff7a45;
+  --green:#75e49b;--gold:#ffd27a;--danger:#ff8794;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 0,#192d4a 0,transparent 34%),var(--bg);color:var(--text);font:15px/1.5 Inter,Segoe UI,system-ui,sans-serif}
+header{position:sticky;top:0;z-index:10;background:#07101fe8;backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.bar{max-width:1180px;margin:auto;padding:14px 22px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.brand{font-weight:850;letter-spacing:.02em;font-size:1.12rem}.brand span{color:var(--orange)}
+.status{font-size:.84rem;color:var(--muted)}
+main{max-width:1180px;margin:auto;padding:26px 22px 70px}
+.intro{display:grid;grid-template-columns:1.45fr .85fr;gap:18px;align-items:stretch}
+.hero,.card{background:linear-gradient(145deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 40px #0005}
+.hero{padding:25px}.hero h1{margin:0 0 8px;font-size:clamp(1.75rem,4vw,3.1rem);line-height:1.02}.hero h1 em{font-style:normal;color:var(--orange)}
+.hero p{max-width:760px;margin:8px 0;color:var(--muted)}
+.notice{padding:20px}.notice strong{color:var(--gold)}
+.notice ul{padding-left:19px;margin:8px 0 0}.notice li{margin:5px 0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}
+.card{grid-column:span 6;padding:20px}.card.wide{grid-column:1/-1}.card.third{grid-column:span 4}
+.eyebrow{color:var(--cyan);font-size:.76rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+h2{font-size:1.15rem;margin:4px 0 5px}p{margin:6px 0}.help{color:var(--muted);font-size:.88rem}
+.field{margin-top:13px;border:1px solid var(--line);border-radius:12px;background:#071323;padding:12px}
+.field-head{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}.field-head b{font-size:.92rem}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button,.linkbtn{appearance:none;border:1px solid #31577a;background:#122a45;color:var(--text);border-radius:9px;padding:8px 12px;font:700 .84rem/1 Segoe UI,system-ui,sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+button.primary{background:linear-gradient(135deg,#ff7040,#ff904d);border-color:#ff9964;color:#07101f}
+button:hover,.linkbtn:hover{border-color:var(--cyan);transform:translateY(-1px)}button:focus-visible,.linkbtn:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+textarea,input[type=text],input[type=url]{width:100%;background:#07101f;color:var(--text);border:1px solid #29415f;border-radius:9px;padding:10px 12px;font:14px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace}
+textarea{resize:vertical;min-height:86px}.story{min-height:460px;white-space:pre-wrap}
+.count{font:12px/1.2 ui-monospace,monospace;color:var(--green)}
+.tagbox{display:flex;gap:7px;flex-wrap:wrap}.tag{padding:6px 9px;border:1px solid #31577a;border-radius:999px;background:#10243c;color:#caeefe;font-size:.82rem}
+.path{word-break:break-all;color:#c7d9ee;font:13px/1.4 ui-monospace,monospace}
+.check{display:flex;gap:9px;align-items:flex-start;margin:8px 0;color:#d8e3f1}.check input{margin-top:4px;accent-color:var(--orange)}
+.blank{color:var(--danger);font-weight:800}.ready{color:var(--green);font-weight:800}.pending{color:var(--gold);font-weight:800}
+.syntax{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.syntax code{display:block;background:#07101f;border:1px solid var(--line);border-radius:9px;padding:10px;color:#d9f8ff;white-space:pre-wrap}
+.preview{width:100%;border:1px solid var(--line);border-radius:12px;background:#07101f;margin-top:10px}
+#toast{position:fixed;right:20px;bottom:20px;z-index:30;max-width:360px;background:#102a25;border:1px solid #3e9e73;color:#eafff5;padding:12px 15px;border-radius:10px;box-shadow:0 12px 35px #0008;opacity:0;transform:translateY(12px);pointer-events:none;transition:.18s}
+#toast.show{opacity:1;transform:none}
+.footer{margin-top:22px;color:var(--muted);font-size:.83rem;text-align:center}
+@media(max-width:850px){.intro{grid-template-columns:1fr}.card,.card.third{grid-column:1/-1}.syntax{grid-template-columns:1fr}.bar{align-items:flex-start;flex-direction:column}}
+@media print{header,.actions,#toast{display:none!important}body{background:white;color:#111}.hero,.card,.notice{box-shadow:none;background:white;border-color:#bbb}.help,.status,.footer{color:#555}textarea,input{color:#111;background:white}.grid{display:block}.card{margin:12px 0;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div class="bar"><div class="brand">hearth<span>beat</span> / Devpost Pasteboard</div><div class="status">Local-only helper - copies text but never submits or uploads</div></div></header>
+<main>
+  <section class="intro">
+    <div class="hero">
+      <div class="eyebrow">Submission control surface</div>
+      <h1>Copy the right value into <em>every field.</em></h1>
+      <p>Each orange button copies exactly what belongs in the named Devpost field. Editable URL fields save only in this browser. Nothing on this page changes Devpost, GitHub, Google Cloud, or the application.</p>
+      <div class="actions" style="margin-top:15px">
+        <button class="primary" data-copy="storyText">Copy complete project story</button>
+        <a class="linkbtn" href="hackathon-command-center.html">Open rules command center</a>
+      </div>
+    </div>
+    <aside class="card notice">
+      <div class="eyebrow">Before Save &amp; continue</div>
+      <strong>Do not final-submit yet.</strong>
+      <ul>
+        <li>Video must be public and under four minutes.</li>
+        <li>Repository must be public before final verification.</li>
+        <li>Architecture diagram is already ready.</li>
+        <li>Startup Prize fields stay blank.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <section class="grid">
+    <article class="card wide">
+      <div class="eyebrow">Project story / About the project</div>
+      <h2>Markdown with supported display LaTeX</h2>
+      <p class="help">Paste the copied source directly into the large Devpost story field. It contains headings, bold text, lists, inline code, and one supported <code>$$ ... $$</code> equation.</p>
+      <div class="field">
+        <div class="field-head"><b>Complete story</b><span class="count" id="storyCount"></span></div>
+        <textarea class="story" id="storyText" readonly spellcheck="false" aria-label="Complete Devpost project story"></textarea>
+        <div class="actions" style="margin-top:9px"><button class="primary" data-copy="storyText">Copy complete project story</button><button data-select="storyText">Select all</button></div>
+      </div>
+      <div class="syntax" aria-label="Verified Markdown and LaTeX syntax">
+        <code>## Heading
+**bold**
+*italics*
+[link](https://example.com)
+![Alt text](image.jpg)</code>
+        <code>Inline math:
+\\( A = \pi r^2 \\)
+
+Displayed math:
+$$
+E = mc^2
+$$</code>
+      </div>
+      <p class="help">Verified from Devpost's Help Center PDF: standard Markdown plus inline and display math are supported. Full LaTeX documents, custom macros, and nonstandard packages are not.</p>
+    </article>
+
+    <article class="card third">
+      <div class="eyebrow">Project overview</div><h2>Project name</h2>
+      <div class="field"><input id="projectName" type="text" value="Hearthbeat" readonly><div class="actions" style="margin-top:9px"><button class="primary" data-copy="projectName">Copy name</button></div></div>
+    </article>
+    <article class="card third">
+      <div class="eyebrow">Project overview</div><h2>Elevator pitch</h2>
+      <div class="field"><textarea id="pitch" readonly>A no-chat household agent that turns school email and calendars into a safe morning plan—acting when policy permits and asking only when a human decision is required.</textarea><div class="field-head" style="margin:8px 0 0"><span class="count" id="pitchCount"></span><button class="primary" data-copy="pitch">Copy pitch</button></div></div>
+    </article>
+    <article class="card third">
+      <div class="eyebrow">Category</div><h2>Taskmaster</h2>
+      <p class="help">Select exactly one category. Do not select Startup Excellence.</p>
+      <div class="actions" style="margin-top:12px"><button class="primary" data-copy-value="Taskmaster">Copy category</button></div>
+    </article>
+
+    <article class="card wide">
+      <div class="eyebrow">Built with - up to 25 tags</div><h2>14 truthful stack tags</h2>
+      <div class="tagbox" id="tags"></div>
+      <div class="field"><textarea id="tagsCsv" readonly>google-adk, gemini, vertex-ai, cloud-run, cloud-scheduler, pub-sub, firestore, bigquery, gemma, ollama, python, fastapi, home-assistant, docker</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="tagsCsv">Copy all tags</button></div></div>
+      <p class="help">If Devpost does not split a pasted list automatically, click individual tag pills above and paste them one at a time.</p>
+    </article>
+
+    <article class="card">
+      <div class="eyebrow">Try it out link 1</div><h2>Live Mission Control</h2>
+      <div class="field"><input id="liveUrl" type="url" value="https://hearthbeat-369944070051.us-central1.run.app/missioncontrol" readonly><div class="actions" style="margin-top:9px"><button class="primary" data-copy="liveUrl">Copy live URL</button><a class="linkbtn" href="https://hearthbeat-369944070051.us-central1.run.app/missioncontrol" target="_blank" rel="noreferrer">Open</a></div></div>
+    </article>
+    <article class="card">
+      <div class="eyebrow">Try it out link 2</div><h2>GitHub repository</h2>
+      <div class="field"><input id="repoUrl" type="url" value="https://github.com/DZim89/hearthbeat" readonly><div class="actions" style="margin-top:9px"><button class="primary" data-copy="repoUrl">Copy repository URL</button><a class="linkbtn" href="https://github.com/DZim89/hearthbeat" target="_blank" rel="noreferrer">Open</a></div></div>
+      <p class="help"><span class="pending">Private during scanning.</span> It must become anonymously accessible before final submission.</p>
+    </article>
+
+    <article class="card wide">
+      <div class="eyebrow">Additional information / Private judge field</div><h2>Testing instructions</h2>
+      <p class="help">Devpost and the judges can see this field, but it is not displayed publicly. The path below uses invented fixtures and recorded model responses; it needs no Google account, API key, or household access.</p>
+      <div class="field"><textarea class="story" id="testingInstructions" readonly spellcheck="false">No credentials are required.
+
+Quick inspection:
+https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
+
+Reproduce with disclosed fixtures (Docker required):
+
+git clone https://github.com/DZim89/hearthbeat.git
+cd hearthbeat
+
+macOS, Linux, or WSL:
+SIMULATED_HOME=1 docker compose up
+
+Windows PowerShell:
+$env:SIMULATED_HOME='1'
+docker compose up
+
+When ready, open http://localhost:8080/missioncontrol. The fixture run starts automatically. Verify the gathered -> planned -> reviewed -> dispatched stages, the calendar action, the permission-gated message labeled judge_auto, the planted front_door_unlock denial, and the run-scoped protected-alias result.
+
+All people, messages, schedules, and home state are disclosed fictional fixtures. Recorded model responses make this path deterministic; no Google account, API key, or real-home access is needed.</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="testingInstructions">Copy testing instructions</button><button data-select="testingInstructions">Select all</button></div></div>
+    </article>
+
+    <article class="card">
+      <div class="eyebrow">Project media / Image gallery</div><h2>Hearthbeat gallery image</h2>
+      <img class="preview" src="hearthbeat-thumbnail.png" alt="Hearthbeat project thumbnail">
+      <div class="field"><div class="path" id="thumbnailPath">C:\Users\donny\Projects\hearthbeat\docs\hearthbeat-thumbnail.png</div><div class="actions" style="margin-top:9px"><button class="primary" data-copy="thumbnailPath">Copy image path</button><a class="linkbtn" href="hearthbeat-thumbnail.png" target="_blank">Preview image</a></div></div>
+      <p class="help"><span class="ready">Ready:</span> PNG, 1536 x 1024, 3:2, under 5 MB.</p>
+    </article>
+    <article class="card">
+      <div class="eyebrow">Required project media</div><h2>Video demo link</h2>
+      <p class="help">Paste the final public YouTube URL here after upload and logged-out verification. Never use private or unlisted visibility.</p>
+      <div class="field"><input id="videoUrl" data-persist type="url" placeholder="https://www.youtube.com/watch?v=..."><div class="actions" style="margin-top:9px"><button class="primary" data-copy="videoUrl">Copy video URL</button></div></div>
+      <label class="check"><input data-persist type="checkbox" id="videoPublic"> Public visibility verified while logged out</label>
+      <label class="check"><input data-persist type="checkbox" id="videoFour"> Runtime is under 4:00 and captions are enabled</label>
+    </article>
+
+    <article class="card wide">
+      <div class="eyebrow">Additional information / Required upload</div><h2>Architecture diagram</h2>
+      <p class="help">Devpost accepts PDF, PPT, PPTX, PNG, JPG, or JPEG up to 35 MB. Click Choose Files in Devpost, paste the copied Windows path into the filename box, and press Open.</p>
+      <img class="preview" src="architecture.png" alt="Hearthbeat system architecture diagram">
+      <div class="field"><div class="path" id="architecturePath">C:\Users\donny\Projects\hearthbeat\docs\architecture.png</div><div class="actions" style="margin-top:9px"><button class="primary" data-copy="architecturePath">Copy architecture path</button><a class="linkbtn" href="architecture.png" target="_blank">Preview diagram</a></div></div>
+      <p class="help"><span class="ready">Ready now:</span> PNG, 1904 x 501, well below the 35 MB limit.</p>
+    </article>
+
+    <article class="card">
+      <div class="eyebrow">Additional information</div><h2>Google AI models used</h2>
+      <div class="field"><textarea id="models" readonly>Gemini 3.5 Flash; Gemini 3.5 Flash-Lite; Gemma 3 (local through Ollama)</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="models">Copy model list</button></div></div>
+      <p class="help">Only models that are implemented and evidenced are named.</p>
+    </article>
+    <article class="card">
+      <div class="eyebrow">Startup Prize</div><h2>Leave both fields blank</h2>
+      <p class="blank">Startup Excellence fields only: leave blank.</p>
+      <p class="help">Do not fill the Startup Excellence organization or corporate-email fields. The separate general Organization name field is <b>Not applicable - individual submission</b>.</p>
+    </article>
+
+    <article class="card wide">
+      <div class="eyebrow">Additional information / Exact selections</div><h2>Devpost selection checklist</h2>
+      <div class="field"><textarea id="additionalSelections" readonly>Sponsor / Special Prizes: leave unselected
+Submitter Type: Individuals
+Country of residence: United States
+Organization name: Not applicable - individual submission
+Project start date: 08-30-26
+Reproducible Testing instructions in README: Yes
+Google SDKs: Agent Development Kit (ADK); Google GenAI SDK
+Google Cloud services: Cloud Run; Firestore; Pub/Sub
+Startup Excellence organization and corporate-email fields: leave blank</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="additionalSelections">Copy selection checklist</button></div></div>
+      <p class="help">Vertex AI, Cloud Scheduler, and BigQuery are truthfully named in the story and tags, but they are not among this form's listed infrastructure checkboxes.</p>
+    </article>
+
+    <article class="card">
+      <div class="eyebrow">Optional bonus content</div><h2>DEV Community article URL</h2>
+      <p class="help">The article must be public and explicitly say it was created for entering the All Things Agentic Hackathon.</p>
+      <div class="field"><input id="articleUrl" data-persist type="url" placeholder="https://dev.to/..."><div class="actions" style="margin-top:9px"><button class="primary" data-copy="articleUrl">Copy article URL</button></div></div>
+    </article>
+    <article class="card">
+      <div class="eyebrow">Optional bonus social</div><h2>Social post URL</h2>
+      <p class="help">The public post must contain the exact hashtag <b>#AllThingsAgenticHackathon</b>.</p>
+      <div class="field"><input id="socialUrl" data-persist type="url" placeholder="https://www.linkedin.com/posts/..."><div class="actions" style="margin-top:9px"><button class="primary" data-copy="socialUrl">Copy social URL</button><button data-copy-value="#AllThingsAgenticHackathon">Copy hashtag</button></div></div>
+    </article>
+
+    <article class="card wide">
+      <div class="eyebrow">Save gate</div><h2>Before clicking Save &amp; continue</h2>
+      <div style="columns:2;column-gap:28px">
+        <label class="check"><input data-persist type="checkbox"> Story copied from this page</label>
+        <label class="check"><input data-persist type="checkbox"> 14 Built with tags entered</label>
+        <label class="check"><input data-persist type="checkbox"> Live and repository links entered</label>
+        <label class="check"><input data-persist type="checkbox"> Thumbnail/gallery image uploaded</label>
+        <label class="check"><input data-persist type="checkbox"> Architecture diagram uploaded</label>
+        <label class="check"><input data-persist type="checkbox"> Gemini 3.5 Flash, Flash-Lite, and Gemma 3 entered</label>
+        <label class="check"><input data-persist type="checkbox"> Startup Prize fields left blank</label>
+        <label class="check"><input data-persist type="checkbox"> Draft saved - final Submit not clicked</label>
+      </div>
+    </article>
+  </section>
+  <p class="footer">Hearthbeat submission helper - local state only - no analytics, credentials, uploads, or network dependency.</p>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="text/plain" id="storySource">## Inspiration
+
+My wife and I both work full-time, and we are raising four kids. Getting
+everyone ready for school, fed, and to the right activity—while also remembering
+the dog, the cat litter, appointments, permission slips, and everything else—can
+feel overwhelming. It starts in the morning, but if I am honest, the mental
+checklist runs until we fall asleep.
+
+I tend to build AI the same way I approach any useful automation: I look for
+work that creates repeated stress, drains attention, or is simply a poor use of
+a person's time, and then I try to remove that friction. If it is frustrating
+for me, another family is probably living through some version of it too.
+
+Hearthbeat came from a few very ordinary failures: an important school email
+got buried, the kids did not know what to prepare on their own, and an
+after-school schedule change surfaced only when we reached drop-off. One rough
+morning also revealed that we had run out of easy breakfast food. I did not
+pretend a deadline-night build could solve the entire household. I chose the
+repeatable failure at the center—school-email and calendar facts reaching us too
+late—and built the smallest dependable agent that could act before the morning
+became stressful.
+
+## What it does
+
+Every morning at 6:45, Cloud Scheduler starts Hearthbeat. Four parallel Google
+ADK gatherers read a tokenized Firestore mirror of Home Assistant state, the
+family calendar, and the school-email inbox. Gemini turns those scattered facts
+into a structured morning briefing and a bounded action plan.
+
+There is no chat window and no prompt to remember. Hearthbeat can create a
+permitted calendar proposal and deliver the household briefing autonomously.
+If a proposed action requires a human decision—such as releasing a drafted
+person-to-person message—it stops at an Approve/Deny permission slip on a real
+phone. A planted front-door action takes the third path: deterministic policy
+refuses it and records the denial as evidence.
+
+Mission Control is a read-only, run-scoped view of what happened: each stage,
+action, approval state, model ID, trigger provenance, estimated list-rate model
+cost, and protected-alias scan result. Most agents only answer. Hearthbeat has
+three outcomes—act, ask, or refuse—and Mission Control shows which path it
+took. The result is less remembering, less nagging, and fewer rushed surprises.
+
+## How we built it
+
+The first reachable Git commit is timestamped **August 30, 2026 at 4:07:10 PM
+PDT**. From that point, I built Hearthbeat as a focused overnight sprint with a
+single rule: finish a narrow, dependable system before adding more ideas.
+
+The cloud pipeline uses Google ADK `ParallelAgent`, `SequentialAgent`, and
+`LoopAgent` primitives with structured outputs. Gemini 3.5 Flash-Lite gathers
+context; Gemini 3.5 Flash plans and critiques; a deterministic policy gate
+reviews the exact hash-bound plan; and a pure-code dispatcher writes
+content-addressed action documents to Firestore. The house then pulls approved
+actions from the cloud, revalidates policy locally, rehydrates privacy tokens,
+and executes through Home Assistant. The cloud never reaches directly into the
+home.
+
+The decision contract is intentionally simpler than the model:
+
+$$
+\operatorname{Execute}(a)
+=
+\operatorname{Allowlisted}(a)
+\land
+\left(\neg \operatorname{HumanGated}(a)
+\lor \operatorname{Approved}(a)\right)
+$$
+
+In plain language: an action must be explicitly allowed, and any human-gated
+action must also be approved. Unknown, malformed, or incomplete output fails
+closed.
+
+Privacy is an architectural boundary. On the intended filmed path, configured
+family aliases are tokenized locally; a local Gemma/Qwen tier scans free text
+for additional PII; and every instrumented outbound Gemini request is checked
+against the configured protected-alias hash set. A match blocks the model call.
+The filmed run reports its own protected-alias count; historical blocked rows
+are labeled separately as caught build failures.
+
+For failure tolerance, runs are date-keyed, stage-checkpointed, and resumable.
+Action documents use content hashes and are reused under the tested retry path.
+Cloud Scheduler uses OIDC, while attempt-scoped provenance keeps a scheduled
+run, manual run, or manual resume visibly distinct. Pub/Sub and a dead-letter
+topic carry audit events into BigQuery.
+
+Judges can also clone the public repository and run the disclosed fixture house
+with one command and no Google credentials. The Firestore emulator, recorded
+model responses, and simulated Home Assistant exercise the same orchestration,
+policy, and dispatch paths.
+
+## Challenges we ran into
+
+- **Making autonomy useful without making it reckless.** A model can propose
+  an action, but it cannot grant itself authority. The deterministic whitelist,
+  permission-slip boundary, and fail-closed parsing became the real product.
+- **Keeping household data local while still using cloud reasoning.** Token
+  replacement alone was not enough, so the runtime combines a known-alias map,
+  local free-text scanning, and a protected-alias egress guard. That guard
+  caught a real build misconfiguration and refused the Gemini call.
+- **Proving what actually happened.** Scheduler identity, retries, resumes,
+  model usage, privacy checks, and cost can easily become vague claims. We made
+  them run-scoped evidence instead.
+- **Retries without duplicate action documents.** A resumed run continues from
+  a checkpoint and reuses the same content-hash action document under the
+  tested retry path. This is not a universal exactly-once guarantee for
+  external Home Assistant side effects.
+- **Shipping honestly under a hard deadline.** We cut attractive features such
+  as pantry awareness, learned trust, and role-specific child briefings rather
+  than describe roadmap ideas as finished capabilities.
+
+## Accomplishments that we're proud of
+
+- A genuine no-chat agent that wakes on schedule and produces visible household
+  consequences instead of another conversational demo.
+- A clean three-way action boundary: autonomous when explicitly allowed,
+  approval-gated when a person must decide, and denied when the action is
+  unknown or forbidden.
+- A privacy path designed around tokenized identities and fail-closed egress,
+  with the filmed result stated only for the exact run being shown.
+- Mission Control evidence that connects the agent's reasoning to actions,
+  approvals, provenance, privacy checks, model use, and cost.
+- A credential-free judge mode plus a current full-suite result of **95 passing
+  tests**, with six Firestore-emulator tests skipped when the emulator was not
+  running.
+- A complete working system built from the repository's first commit at 4:07:10
+  PM PDT on August 30 through the overnight submission sprint.
+
+## What we learned
+
+The most important lesson was that safe autonomy is not primarily a prompting
+problem. The model is useful for interpreting context and proposing a plan, but
+trust comes from deterministic authority boundaries, content-hash
+action-document reuse under the tested retry path, observable evidence, and a
+clear human decision point.
+
+We also learned that an agent feels more natural when the user does less. A
+scheduled briefing, a calendar proposal, and one meaningful permission slip can
+be more useful than a sophisticated chat interface. Finally, narrowing claims
+to the exact run made the engineering better: if a privacy, provenance, cost, or
+reliability statement could not be shown on screen or reproduced from the
+repository, it did not belong in the submission.
+
+## What's next for Hearthbeat
+
+The next priorities are an injection-resistant school-mail boundary,
+role-aware briefings that give adults and children only the information they
+need, and consent-bounded memory whose trust is earned per action, expires, and
+can always be revoked. After those foundations, Hearthbeat can look ahead to
+district schedules, weather, presence, and pantry readiness so tomorrow's
+problems are handled tonight—without turning the home into another app the
+family has to manage.
+
+## AI-assisted build provenance
+
+This is a solo entry by Donny Zimmerman, built with a home-grown **AI Agent
+Fleet Workspace**: a private multi-agent engineering environment that lets me
+give several AI systems a shared plan, bounded work, a single source of truth,
+and evidence gates before changes are accepted. I directed the problem,
+product decisions, household data boundaries, safety policy, acceptance
+criteria, and final submission; the fleet accelerated research,
+implementation, testing, and adversarial review.
+
+The workspace used Claude Code, Antigravity/Gemini, Codex, and geminiclaw. Its
+private fleet infrastructure is intentionally outside this public entry, but
+its design philosophy is visible in Hearthbeat: specialize the agents, bound
+their authority, and require evidence before action. All Hearthbeat application
+code was authored August 30–31, 2026. The pre-existing Home Assistant
+installation and local model servers are environment and data sources, not
+submission code.</script>
+<script>
+(() => {
+  const story = document.getElementById('storySource').textContent.trim();
+  const storyBox = document.getElementById('storyText');
+  storyBox.value = story;
+  const words = story.split(/\s+/).filter(Boolean).length;
+  document.getElementById('storyCount').textContent = `${words.toLocaleString()} words / ${story.length.toLocaleString()} characters`;
+  const pitch = document.getElementById('pitch').value;
+  document.getElementById('pitchCount').textContent = `${pitch.length} / 200 characters`;
+
+  const tags = document.getElementById('tagsCsv').value.split(',').map(v => v.trim());
+  const tagbox = document.getElementById('tags');
+  tags.forEach(tag => {
+    const b = document.createElement('button');
+    b.className = 'tag'; b.type = 'button'; b.textContent = tag;
+    b.title = `Copy ${tag}`; b.addEventListener('click', () => copyText(tag, `Copied tag: ${tag}`));
+    tagbox.appendChild(b);
+  });
+
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(message, bad=false){
+    clearTimeout(toastTimer); toast.textContent = message;
+    toast.style.background = bad ? '#351a25' : '#102a25';
+    toast.style.borderColor = bad ? '#a74359' : '#3e9e73';
+    toast.classList.add('show'); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+  async function copyText(value, message='Copied to clipboard'){
+    if(!value || !value.trim()){showToast('This field is still blank', true); return;}
+    try{
+      if(navigator.clipboard && window.isSecureContext){await navigator.clipboard.writeText(value);}
+      else{
+        const helper=document.createElement('textarea'); helper.value=value; helper.setAttribute('readonly','');
+        helper.style.cssText='position:fixed;left:-9999px;top:0'; document.body.appendChild(helper);
+        helper.select(); if(!document.execCommand('copy')) throw new Error('copy failed'); helper.remove();
+      }
+      showToast(message);
+    }catch(error){showToast('Clipboard blocked - use Select all, then Ctrl+C', true);}
+  }
+  document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', () => {
+    const node=document.getElementById(button.dataset.copy);
+    const value=('value' in node) ? node.value : node.textContent;
+    copyText(value);
+  }));
+  document.querySelectorAll('[data-copy-value]').forEach(button => button.addEventListener('click', () => copyText(button.dataset.copyValue)));
+  document.querySelectorAll('[data-select]').forEach(button => button.addEventListener('click', () => {
+    const node=document.getElementById(button.dataset.select); node.focus(); node.select(); showToast('Selected - press Ctrl+C');
+  }));
+
+  document.querySelectorAll('[data-persist]').forEach((node, index) => {
+    const key=`hearthbeat-devpost-${node.id || index}`;
+    const saved=localStorage.getItem(key);
+    if(saved !== null){if(node.type==='checkbox') node.checked=saved==='true'; else node.value=saved;}
+    node.addEventListener('change', () => localStorage.setItem(key,node.type==='checkbox' ? node.checked : node.value));
+    node.addEventListener('input', () => {if(node.type!=='checkbox') localStorage.setItem(key,node.value);});
+  });
+})();
+</script>
+</body>
+</html>

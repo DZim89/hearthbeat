@@ -1,6 +1,7 @@
 # Building hearthbeat in one night: an ADK agent that runs my house's morning (and audits every outbound call for protected aliases)
 
-*Build log for the All Things Agentic Hackathon. Category: The Taskmaster.*
+*I created this article for the purpose of entering the All Things Agentic
+Hackathon. Category: The Taskmaster.*
 
 I built an autonomous household-operations agent in one night with Google's
 Agent Development Kit, Gemini 3.5 on Vertex, and a stack of Google Cloud
