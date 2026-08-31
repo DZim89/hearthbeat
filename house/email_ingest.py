@@ -57,7 +57,9 @@ def ingest_file(path: Path) -> None:
     )
     processed = path.parent / "processed"
     processed.mkdir(exist_ok=True)
-    path.rename(processed / path.name)
+    dst = processed / path.name
+    dst.unlink(missing_ok=True)  # 9p/NTFS can refuse rename-over-existing
+    path.rename(dst)
     print(
         f"[ingest] {path.name}: map_hits={scrub_body.map_hits + scrub_subject.map_hits} "
         f"gemma_spans={scrub_body.model_spans + scrub_subject.model_spans} tier={scrub_body.tier}"
