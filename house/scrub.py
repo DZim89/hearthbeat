@@ -219,6 +219,13 @@ def salted_alias_hashes(tmap: TokenMap) -> list[str]:
         for alias in entry.aliases:
             if not alias.strip():
                 continue
+            # A generic family word used as a placeholder alias ("Grandma",
+            # "Dad") stays in the map for REHYDRATION but must never arm a
+            # hash: models legitimately write those words in prose, and the
+            # guard would block every mention. (Live incident: the planner
+            # writing the English word for [[P_GRANDMA]] tripped 2 matches.)
+            if alias.strip().lower() in _PER_WORD_STOPWORDS:
+                continue
             out.add(_hash(tmap.salt, alias))
             words = alias.split()
             if entry.kind == "person" and len(words) > 1:

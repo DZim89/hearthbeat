@@ -1,32 +1,35 @@
 # Filmed-run evidence capsule
 
-One run id, every surface. Filled after the scheduled run; all values are
-token-space / redacted by construction. This is the cross-reference judges can
-follow from the video to the live system.
+**STATUS: PENDING — nothing below is publishable until copied from the exact
+06:45 run's evidence (run doc, Scheduler describe, BigQuery rows) within its
+own time window.** One run id, every surface; all values token-space /
+redacted by construction. This is the cross-reference judges can follow from
+the video to the live system.
 
 ## Run `2026-08-31` (the uncut core)
 
 | Surface | Evidence | Value (fill at 7:30 triage) |
 |---|---|---|
-| Cloud Scheduler | `hearth-morning` last-attempt status + time | «SUCCESS @ 06:4x PT» |
-| Run doc | `trigger_source` / `triggered_by` | «scheduled / sa-home@new-prompt-490003.iam.gserviceaccount.com» |
-| Run doc | `stage_status` | «gathered/planned/reviewed/dispatched: done» |
+| Cloud Scheduler | `hearth-morning` last-attempt status + time | PENDING CAPTURE |
+| Run doc | `trigger_source` / `triggered_by` | PENDING CAPTURE (expect: scheduled / the configured scheduler SA) |
+| Run doc | `stage_status` | PENDING CAPTURE |
 | Mission Control | permalink | https://hearthbeat-369944070051.us-central1.run.app/missioncontrol?run=2026-08-31 |
-| Models | ids used (from `model_usage` events) | «gemini-3.5-flash, gemini-3.5-flash-lite @ location=global» |
-| Actions | dispatched (type → status) | «…» |
-| Permission slip | target / decided_via | «[[P_GRANDMA]] / ha_mobile or console» |
-| Egress guard | checks / protected-alias matches | «N / 0» |
-| BigQuery | `runs_v` row (model_calls, cost_cents, denials) | «…» |
-| Cost | `runs_v.cost_cents` at corrected list rates | «…» |
+| Models | ids used (from `model_usage` events) | PENDING CAPTURE (expect: the configured 3.5 model ids) |
+| Actions | dispatched (type → status) | PENDING CAPTURE |
+| Permission slip | target / decided_via | PENDING CAPTURE |
+| Egress guard | checks / protected-alias matches | PENDING CAPTURE |
+| BigQuery | `runs_v` row (model_calls, cost_cents, denials) | PENDING CAPTURE |
+| Cost | `runs_v.cost_cents` — run-scoped list-rate estimate at the verified configured rates | PENDING CAPTURE |
 
-Historical `egress_block` rows (2 matches, 2026-08-30) are the guard blocking
-our own build misconfiguration — separate from the filmed run and disclosed in
-the README honesty ledger.
+Historical `egress_block` rows (build days, Aug 30–31) are the guard blocking
+our own misconfigurations — a fixture-map mirror leak, then an over-armed
+placeholder-alias hash — separate from the filmed run and disclosed in the
+README honesty ledger.
 
 ## Judge-mode run (pickup P6)
 
 | Surface | Evidence | Value |
 |---|---|---|
-| Kickoff | `/trigger` response | «status done, trigger_source manual» |
-| ha-sim log | TV pause / calendar event / notifications | «…» |
-| Ledger file | `egress_check` events with fixture hashes | «…» |
+| Kickoff | `/trigger` response | PENDING CAPTURE |
+| ha-sim log | TV pause / calendar event / notifications | PENDING CAPTURE |
+| Ledger file | `egress_check` events with fixture hashes | PENDING CAPTURE |

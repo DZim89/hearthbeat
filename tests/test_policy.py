@@ -117,6 +117,47 @@ def test_malformed_action_is_a_finding_not_a_crash(policy):
     assert any(f.rule == "malformed_action" for f in findings)
 
 
+def test_structural_valid_plan_no_findings(policy):
+    plan = {"summary": "s", "briefing_md": "b", "actions": [_action()]}
+    assert policy.structural_findings(plan) == []
+
+
+def test_structural_explicit_empty_actions_is_valid(policy):
+    plan = {"summary": "quiet day", "briefing_md": "nothing to do", "actions": []}
+    assert policy.structural_findings(plan) == []
+    assert not any(f.rule == "invalid_model_output"
+                   for f in policy.check(plan, now=MIDDAY))
+
+
+@pytest.mark.parametrize("plan", [
+    {},                                                       # empty parse result
+    {"summary": "s", "briefing_md": "b"},                     # actions missing
+    {"summary": "s", "briefing_md": "b", "actions": "none"},  # wrong container type
+    {"summary": "", "briefing_md": "b", "actions": []},       # blank summary
+    {"summary": "s", "briefing_md": 5, "actions": []},        # wrong type
+    {"summary": "s", "briefing_md": "b", "actions": ["x"]},   # non-dict action
+    {"summary": "s", "briefing_md": "b",
+     "actions": [{"action_type": "media_pause", "entity": "e", "why": ""}]},   # blank why
+    {"summary": "s", "briefing_md": "b",
+     "actions": [{"action_type": "media_pause", "entity": "e", "why": "w",
+                  "sensitive": "yes"}]},                       # sensitive not bool
+])
+def test_structural_invalid_model_output(policy, plan):
+    findings = policy.check(plan, now=MIDDAY)
+    assert any(f.rule == "invalid_model_output" and f.action_index == -1 for f in findings)
+
+
+def test_as_dict_is_strict():
+    from app.policy_gate import _as_dict
+    assert _as_dict({"a": 1}) == {"a": 1}
+    assert _as_dict('{"a": 1}') == {"a": 1}
+    assert _as_dict('["not", "a", "plan"]') == {}
+    assert _as_dict("prose about a plan") == {}
+    assert _as_dict(["list"]) == {}
+    assert _as_dict(5) == {}
+    assert _as_dict(None) == {}
+
+
 def test_plan_hash_stable_and_sensitive_to_change():
     p1 = {"actions": [_action()], "summary": "s"}
     p2 = {"summary": "s", "actions": [_action()]}

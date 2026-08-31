@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -44,6 +45,63 @@ def active_for(run_id: str) -> "LedgerPlugin | None":
 
 def _now_ms() -> int:
     return int(time.time() * 1000)
+
+
+_HASH_RE = re.compile(r"[0-9a-f]{64}")
+
+
+def _csv(environ: dict, key: str) -> list[str]:
+    return [x.strip() for x in (environ.get(key) or "").split(",") if x.strip()]
+
+
+def validate_egress_config(environ=None) -> list[str]:
+    """Structural validation of the egress-guard configuration. Pure function;
+    returns error strings naming KEYS AND COUNTS ONLY — never values.
+
+    Contract:
+      - Cloud Run production (K_SERVICE set, not simulated): all three of
+        EGRESS_SALT / EGRESS_ALIAS_HASHES / EGRESS_KNOWN_TOKENS must be
+        present and structurally valid — the guard is never silently off.
+      - Fixture-only judge mode (SIMULATED_HOME=1 and JUDGE_LLM != live) and
+        local development MAY run guardless (all three empty — an
+        egress_guard_disabled event is emitted), but config that IS supplied
+        must be fully valid everywhere.
+    """
+    env = environ if environ is not None else os.environ
+    simulated = env.get("SIMULATED_HOME") == "1"
+    judge_live = simulated and env.get("JUDGE_LLM", "fixture") == "live"
+    # Strict (guard REQUIRED): Cloud Run production, and judge-live mode
+    # (real requests leave the machine there too). Guardless is allowed only
+    # for fixture-only judge mode and bare local development.
+    strict = (bool(env.get("K_SERVICE")) and not simulated) or judge_live
+    salt = (env.get("EGRESS_SALT") or "").strip()
+    hashes = _csv(env, "EGRESS_ALIAS_HASHES")
+    tokens = _csv(env, "EGRESS_KNOWN_TOKENS")
+
+    supplied = bool(salt or hashes or tokens)
+    if not supplied:
+        return (
+            ["EGRESS_SALT/EGRESS_ALIAS_HASHES/EGRESS_KNOWN_TOKENS missing (all three required in production)"]
+            if strict
+            else []
+        )
+
+    errs: list[str] = []
+    if not salt:
+        errs.append("EGRESS_SALT empty while other egress config is supplied")
+    if not hashes:
+        errs.append("EGRESS_ALIAS_HASHES empty while other egress config is supplied")
+    bad_hashes = sum(1 for h in hashes if not _HASH_RE.fullmatch(h.lower()))
+    if bad_hashes:
+        errs.append(f"EGRESS_ALIAS_HASHES: {bad_hashes} entr{'y' if bad_hashes == 1 else 'ies'} not 64-char hex")
+    if not tokens:
+        errs.append("EGRESS_KNOWN_TOKENS empty while other egress config is supplied")
+    from house.scrub import TOKEN_RE
+
+    bad_tokens = sum(1 for t in tokens if not TOKEN_RE.fullmatch(t))
+    if bad_tokens:
+        errs.append(f"EGRESS_KNOWN_TOKENS: {bad_tokens} entr{'y' if bad_tokens == 1 else 'ies'} not [[A-Z0-9_]] tokens")
+    return errs
 
 
 class LedgerSink:
@@ -118,21 +176,15 @@ class LedgerPlugin(BasePlugin):
         self.trigger_source = trigger_source
         self.sink = sink or make_sink()
         self.prices = _prices()
-        self.egress_salt = os.environ.get("EGRESS_SALT", "")
-        self.alias_hashes = {
-            h for h in os.environ.get("EGRESS_ALIAS_HASHES", "").split(",") if h
-        }
-        self.known_tokens = frozenset(
-            t for t in os.environ.get("EGRESS_KNOWN_TOKENS", "").split(",") if t
-        )
-        # Fail-closed: production must never run with the guard silently off.
+        # Fail-closed: production must never run with the guard silently off,
+        # and supplied config must be structurally valid everywhere.
+        errors = validate_egress_config()
+        if errors:
+            raise RuntimeError("egress guard config invalid: " + "; ".join(errors))
+        self.egress_salt = (os.environ.get("EGRESS_SALT") or "").strip()
+        self.alias_hashes = {h.lower() for h in _csv(dict(os.environ), "EGRESS_ALIAS_HASHES")}
+        self.known_tokens = frozenset(_csv(dict(os.environ), "EGRESS_KNOWN_TOKENS"))
         if not self.alias_hashes:
-            if os.environ.get("K_SERVICE") and os.environ.get("SIMULATED_HOME") != "1":
-                raise RuntimeError(
-                    "EGRESS_ALIAS_HASHES is empty on Cloud Run — refusing to run "
-                    "with the egress guard disabled (set it from "
-                    "house/export_egress_hashes.py output)."
-                )
             self._emit("egress_guard_disabled")
         self.record_dir = (
             Path(os.environ.get("LLM_FIXTURES_DIR", "fixtures/llm"))

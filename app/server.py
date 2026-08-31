@@ -18,7 +18,9 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import runcontrol
+from datetime import datetime, timedelta, timezone
+
+from app import ledger, runcontrol
 from app.stores import ACTIONS, RUNS, SLIPS, db, is_simulated
 
 api = FastAPI(title="hearthbeat", docs_url=None, redoc_url=None)
@@ -56,9 +58,18 @@ def _verify_trigger_token(request: Request) -> None:
         raise HTTPException(403, "bad or missing X-Hearth-Token")
 
 
+def _require_valid_egress_config() -> None:
+    """Non-2xx BEFORE any run doc is claimed — a stranded status=running doc
+    would block the real cron for the staleness window."""
+    errors = ledger.validate_egress_config()
+    if errors:
+        raise HTTPException(500, "egress guard config invalid: " + "; ".join(errors))
+
+
 @api.post("/run")
 async def run_scheduled(request: Request) -> dict[str, Any]:
     email = _verify_scheduler_oidc(request)
+    _require_valid_egress_config()
     return await runcontrol.execute_run(trigger_source="scheduled", triggered_by=email)
 
 
@@ -69,6 +80,7 @@ async def run_manual(
     red_team: int = Query(default=0),
 ) -> dict[str, Any]:
     _verify_trigger_token(request)
+    _require_valid_egress_config()
     caller = "judge-mode" if is_simulated() else "operator-token"
     return await runcontrol.execute_run(
         run_id,
@@ -128,18 +140,40 @@ pre{background:#1c1f27;border:1px solid #2a2e39;border-radius:8px;padding:1rem;w
 """
 
 
+def _within_run_window(doc: dict, started_at, ended_at, *, skew_s: int = 120) -> bool:
+    """Belt on top of the exact run_id equality filter: a displayed row must
+    also have been created inside the run's own time window (start ... end,
+    or now while running). Missing timestamps fall back to the id filter."""
+    ts = doc.get("created_at")
+    if ts is None or started_at is None:
+        return True
+    end = ended_at or datetime.now(timezone.utc)
+    skew = timedelta(seconds=skew_s)
+    return (started_at - skew) <= ts <= (end + skew)
+
+
 @api.get("/missioncontrol", response_class=HTMLResponse)
 async def missioncontrol(run: str | None = Query(default=None)) -> str:
     run_id = run or runcontrol.today_run_id()
     snap = db().collection(RUNS).document(run_id).get()
     data = (snap.to_dict() or {}) if snap.exists else {}
+    started_at = data.get("started_at")
+    finished_at = data.get("finished_at")
     actions = [
-        {"id": d.id, **(d.to_dict() or {})}
-        for d in db().collection(ACTIONS).where("run_id", "==", run_id).get()
+        a
+        for a in (
+            {"id": d.id, **(d.to_dict() or {})}
+            for d in db().collection(ACTIONS).where("run_id", "==", run_id).get()
+        )
+        if _within_run_window(a, started_at, finished_at)
     ]
     slips = [
-        {"id": d.id, **(d.to_dict() or {})}
-        for d in db().collection(SLIPS).where("run_id", "==", run_id).get()
+        s
+        for s in (
+            {"id": d.id, **(d.to_dict() or {})}
+            for d in db().collection(SLIPS).where("run_id", "==", run_id).get()
+        )
+        if _within_run_window(s, started_at, finished_at)
     ]
 
     e = html.escape
@@ -177,7 +211,10 @@ async def missioncontrol(run: str | None = Query(default=None)) -> str:
 <h1>hearthbeat <span class=muted>/ mission control</span></h1>
 <p class=kv>run <b>{e(run_id)}</b> · status <b>{e(str(data.get('status', 'no run yet')))}</b>
 · trigger <span class="badge {badge_cls}">{trig}</span>
-· attempt {e(str(data.get('attempt', '—')))} · read-only, auto-refreshes</p>
+· by {e(str(data.get('triggered_by', '—')))}
+· attempt {e(str(data.get('attempt', '—')))}
+· window {e(str(started_at)[:19])} → {e(str(finished_at)[:19]) if finished_at else 'running'}
+· read-only, auto-refreshes</p>
 <h2>Pipeline</h2><p>{stages}</p>
 <h2>Day summary</h2><pre>{e(str(data.get('summary', '— pipeline has not planned yet —')))}</pre>
 <h2>Morning briefing (token space — real names never reach this page)</h2>

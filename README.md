@@ -87,11 +87,14 @@ SequentialAgent
 Observability is one ADK **plugin** (`app/ledger.py`): every lifecycle hook
 emits to Pub/Sub `agent-events` → a **native BigQuery subscription** (with a
 DLQ) → `agent_logs` views for cost-per-run in cents, policy denials, and the
-zero-egress proof. The same hook is the **egress guard** (below).
+zero-egress proof (cloud-run rows; house-side events carry their own
+source and run id). The same hook is the **egress guard** (below).
 
 ## The privacy architecture
 
-Real names live only inside the house. Three independent layers:
+The intended runtime path keeps real names inside the house — the map
+catches what it knows, Gemma catches what it can't, and the cloud guard
+detects aliases covered by the configured hash set. Three layers:
 
 | Layer | Where | What it does |
 |---|---|---|
@@ -102,8 +105,8 @@ Real names live only inside the house. Three independent layers:
 Standing proof in BigQuery:
 
 ```sql
--- zero rows for every legitimate run; the only rows ever written are the
--- guard blocking OUR OWN build mistake (see the honesty ledger below)
+-- zero protected-alias matches in the filmed run; the table's historical
+-- rows are the guard blocking OUR OWN build mistakes (honesty ledger below)
 SELECT * FROM `new-prompt-490003.agent_logs.egress_violations_v`;
 SELECT * FROM `new-prompt-490003.agent_logs.privacy_tier_v`;       -- Gemma's catches
 ```
@@ -112,8 +115,9 @@ SELECT * FROM `new-prompt-490003.agent_logs.privacy_tier_v`;       -- Gemma's ca
 
 We think demo honesty is an architectural property, not an editing choice:
 
-- `trigger_source=scheduled` is writable from **one code path**: `POST /run`,
-  which verifies the caller's OIDC identity is the scheduler service account.
+- `POST /run` is the **only application code path** that assigns
+  `trigger_source=scheduled` — and only after validating the caller's OIDC
+  identity against the configured Scheduler service account.
 - `POST /trigger` (filming, judge mode) hard-codes `manual`. The badge is on
   Mission Control, the run doc, and every BigQuery row.
 - `run_id = date` with a Firestore `create()` precondition: re-fired crons
@@ -196,10 +200,14 @@ docs/       architecture, demo runbook, the HA automation
 - **The calendar conflict in the demo video was seeded** (soccer practice vs.
   dinner at Grandma's) so the story is legible on camera. The detection,
   planning, refusal, approval, and calendar write are all real and live.
-- **AI assistance**: this project was built with Claude Code (Anthropic) as
-  the coding agent, driven by the maintainer. The pre-existing Home Assistant
-  installation and local model servers (ollama/vLLM) are environment/data
-  sources, not part of this submission's codebase.
+- **AI assistance**: built with **Claude Code** (Anthropic) as the sole
+  repository writer / coding agent. **Codex Desktop** (OpenAI) served as
+  coordinator and acceptance reviewer and generated the thumbnail image;
+  Gemini-based reviewers (**geminiclaw / Antigravity**) provided read-only
+  Google-stack and innovation review. None of the reviewers authored
+  repository code. The pre-existing Home Assistant installation and local
+  model servers (ollama/vLLM) are environment/data sources, not part of this
+  submission's codebase.
 - **Test/demo runs** use suffixed run ids (`YYYY-MM-DD-e2eN`) and
   `trigger_source=manual` — the scheduled-run footage is a real cron firing.
 - **The egress guard caught us first.** During the build, the house mirror was
@@ -209,11 +217,13 @@ docs/       architecture, demo runbook, the HA automation
   Gemini request, **blocked the model call, and failed the run**. Those
   `egress_block` rows are still in BigQuery — we left them there, because the
   proof isn't "the table is empty", it's "every row in it is the guard doing
-  its job against our own mistakes". Zero rows exist for any legitimate run.
+  its job against our own mistakes". The filmed run shows zero
+  protected-alias matches.
 
 ## Cost
 
-Every run is priced to the microcent in BigQuery (`runs_v.cost_cents`) and shown
-on Mission Control — that per-run figure is the authoritative cost number. The policy
-engine enforces a 50¢/day budget ceiling mid-run — the agent literally refuses
-its own plan if it would blow the budget.
+Each run's cost is a **run-scoped list-rate estimate** computed from the
+configured official per-token rates (`config/prices.yaml`) and recorded in
+BigQuery (`runs_v.cost_cents`) and on Mission Control. A configured spend
+ceiling is enforced mid-run against observed spend — the policy engine
+refuses the plan rather than exceed it.

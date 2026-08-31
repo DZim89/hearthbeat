@@ -74,8 +74,8 @@ family (the thing it knows), Gemma catches strangers' PII the map cannot know
 missed. Cloud-side, the LedgerPlugin's `before_model_callback` scans every
 outbound model request against **salted hashes** of the protected names — the
 cloud can prove nothing leaked without ever holding plaintext. BigQuery view
-`egress_violations_v` shows zero protected-alias matches for every legitimate
-run (its only historical rows are the guard blocking our own build mistake —
+`egress_violations_v` shows zero protected-alias matches for the filmed run
+(its only historical rows are the guard blocking our own build mistakes —
 kept deliberately).
 
 **4. Pull, never push.** The house exposes no webhook, no tunnel, no inbound
@@ -85,9 +85,10 @@ by transaction → rehydrates tokens locally → executes in HA. Sensitive actio
 an HA companion-app notification (or the console standby). Human approval is
 consent — it also lifts quiet-hours for that action.
 
-**5. A manual run can never impersonate the cron.** `trigger_source=scheduled`
-is writable from exactly one code path: `/run`, behind in-app OIDC verification
-that the caller is the scheduler's service account. `/trigger` hard-codes
+**5. A manual run is labeled, structurally.** `POST /run` is the only
+application code path that assigns `trigger_source=scheduled`, after
+validating the caller's OIDC identity against the configured Scheduler
+service account. `/trigger` hard-codes
 `manual`. The badge on Mission Control, the run doc, and every ledger row
 carry it. Judge mode fires `/trigger` — and says so.
 

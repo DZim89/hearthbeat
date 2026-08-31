@@ -35,15 +35,20 @@ RED_TEAM_ACTION = {
 
 
 def _as_dict(value: Any) -> dict[str, Any]:
+    """STRICT: only an actual dict (or a model that dumps to one) passes.
+    Lists, scalars, prose, and invalid JSON all become {} — which the policy
+    engine then rejects as invalid_model_output. Never fabricate structure."""
     if isinstance(value, dict):
         return value
+    if hasattr(value, "model_dump"):
+        dumped = value.model_dump()
+        return dumped if isinstance(dumped, dict) else {}
     if isinstance(value, str):
         try:
-            return json.loads(value)
+            parsed = json.loads(value)
         except json.JSONDecodeError:
             return {}
-    if hasattr(value, "model_dump"):
-        return value.model_dump()
+        return parsed if isinstance(parsed, dict) else {}
     return {}
 
 
@@ -53,11 +58,12 @@ class PolicyGate(BaseAgent):
         run_id = state.get("run_id", "unknown")
         policy = load_policy(os.environ.get("POLICY_FILE", "config/policy.yaml"))
         plan = _as_dict(state.get("day_plan"))
-        plan.setdefault("actions", [])
 
         delta: dict[str, Any] = {}
         red_team = os.environ.get("RED_TEAM") == "1" or bool(state.get("red_team"))
-        if red_team and not state.get("red_team_planted"):
+        # Plant only into a structurally valid actions list — a parse failure
+        # must surface as invalid_model_output, not be masked by the plant.
+        if red_team and not state.get("red_team_planted") and isinstance(plan.get("actions"), list):
             plan["actions"] = list(plan["actions"]) + [dict(RED_TEAM_ACTION)]
             delta["red_team_planted"] = True
 

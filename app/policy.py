@@ -101,6 +101,33 @@ class Policy:
 
         return violations
 
+    def structural_findings(self, plan: dict[str, Any]) -> list[Finding]:
+        """Default-deny on model-output SHAPE: an empty/prose/malformed plan
+        must never pass as a valid no-op. Explicit actions=[] with real
+        summary/briefing IS valid."""
+        bad: list[str] = []
+        for key in ("summary", "briefing_md"):
+            v = plan.get(key)
+            if not isinstance(v, str) or not v.strip():
+                bad.append(key)
+        actions = plan.get("actions")
+        if not isinstance(actions, list):
+            bad.append("actions")
+        else:
+            for i, a in enumerate(actions):
+                if not isinstance(a, dict):
+                    bad.append(f"action[{i}]")
+                    continue
+                for field_name in ("action_type", "entity", "why"):
+                    v = a.get(field_name)
+                    if not isinstance(v, str) or not v.strip():
+                        bad.append(f"action[{i}].{field_name}")
+                if "sensitive" in a and not isinstance(a["sensitive"], bool):
+                    bad.append(f"action[{i}].sensitive")
+        if bad:
+            return [Finding(-1, "invalid_model_output", "missing/invalid: " + ", ".join(bad[:12]))]
+        return []
+
     def check(
         self,
         plan: dict[str, Any],
@@ -108,8 +135,8 @@ class Policy:
         now: datetime,
         spent_microcents: int = 0,
     ) -> list[Finding]:
-        findings: list[Finding] = []
-        actions = plan.get("actions") or []
+        findings: list[Finding] = list(self.structural_findings(plan))
+        actions = plan.get("actions") if isinstance(plan.get("actions"), list) else []
         max_actions = int(self.raw.get("max_actions_per_run", 6))
         if len(actions) > max_actions:
             findings.append(

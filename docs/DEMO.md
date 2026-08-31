@@ -27,7 +27,8 @@ ids.
 ## 8:15–9:15 — pickups (see VIDEO_SCRIPT pickup table)
 Red-team labeled manual run; Gemma terminal beat; permission-slip tap +
 calendar continuation; judge-mode clean-clone beat; 3:2 thumbnail already at
-docs/hearthbeat-thumbnail.png. Evidence capsule filled in docs/EVIDENCE.md.
+docs/hearthbeat-thumbnail.png. docs/EVIDENCE.md stays PENDING until each cell
+is copied from the exact 06:45 run's own evidence — never pre-filled.
 
 ## 9:15 → 12:30 — assembly and submission
 - 9:15–10:15 video edit (montage + labeled uncut core; PII frame-scan).

@@ -44,7 +44,8 @@ class Dispatcher(BaseAgent):
         run_id = state.get("run_id", "unknown")
         policy = load_policy(os.environ.get("POLICY_FILE", "config/policy.yaml"))
         plan = _as_dict(state.get("day_plan"))
-        actions = [a for a in plan.get("actions", []) if isinstance(a, dict)]
+        raw_actions = plan.get("actions")
+        actions = [a for a in raw_actions if isinstance(a, dict)] if isinstance(raw_actions, list) else []
         now = datetime.now(policy.tz)
         active = ledger.active_for(run_id)
 
@@ -65,8 +66,8 @@ class Dispatcher(BaseAgent):
                     "policy_denial", stage="dispatch", rule=f.rule,
                     action_index=-1, detail=f.detail,
                 )
-        if any(f.rule == "budget_exhausted" for f in plan_findings):
-            actions = []  # refuse the whole dispatch — spend cap is a hard stop
+        if any(f.rule in ("budget_exhausted", "invalid_model_output") for f in plan_findings):
+            actions = []  # hard stop: never dispatch from a busted plan or past the cap
         else:
             max_actions = int(policy.raw.get("max_actions_per_run", 6))
             actions = actions[:max_actions]

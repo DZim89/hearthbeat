@@ -127,6 +127,24 @@ def test_rehydrate_longest_first_prefix_ids():
     assert "media_player.real_tv_2" in out
 
 
+def test_generic_placeholder_aliases_arm_no_hashes():
+    # "Grandma"/"Dad"/"Mom" style placeholder aliases stay for rehydration but
+    # must never arm hashes — models write those words in ordinary prose.
+    # (Live incident: planner prose for [[P_GRANDMA]] blocked a real run.)
+    tmap = scrub.TokenMap(version=1, salt="s", entries=[
+        scrub.MapEntry(token="[[P_GRANDMA]]", kind="person", aliases=["Grandma"]),
+        scrub.MapEntry(token="[[P_DAD]]", kind="person", aliases=["Dad", "Rutherford"]),
+    ])
+    hashes = set(scrub.salted_alias_hashes(tmap))
+    assert scrub._hash("s", "grandma") not in hashes
+    assert scrub._hash("s", "dad") not in hashes
+    assert scrub._hash("s", "rutherford") in hashes  # real names still armed
+    assert scrub.scan_hashed("dinner at Grandma's with dad", "s", hashes) == 0
+    assert scrub.scan_hashed("call Rutherford today", "s", hashes) == 1
+    # rehydration still works for the placeholder:
+    assert scrub.rehydrate("[[P_GRANDMA]]", tmap) == "Grandma"
+
+
 def test_map_file_shape_validated(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"version": 1, "salt": "s", "entries": [

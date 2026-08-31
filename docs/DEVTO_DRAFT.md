@@ -95,17 +95,19 @@ free emulator exists (BigQuery → JSONL), each disclosed.
 
 ## Numbers
 
-- Full run: single-digit cents, BigQuery-audited to the microcent
-  (`runs_v.cost_cents`); a 50¢/day
-  budget is enforced *mid-run* by the policy engine.
-- `egress_violations_v`: zero protected-alias matches on every legitimate run
-  (its only rows ever: the guard catching our own misconfigured mirror).
+- Per-run cost: a run-scoped list-rate estimate at official configured
+  rates (`runs_v.cost_cents` in BigQuery); a configured spend ceiling is
+  enforced *mid-run* against observed spend.
+- `egress_violations_v`: zero protected-alias matches in the filmed run
+  (its only rows ever: the guard catching our own build misconfigurations).
 - Unit tests: the scrub round-trip and policy table tests are the graded core.
 
 Repo: https://github.com/DZim89/hearthbeat · Mission Control (live,
 read-only, token-space): https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
-*Built with Claude Code as the coding agent — disclosed in the repo. My house
+*Built with Claude Code as the coding agent and sole repo writer, with
+Codex Desktop as coordinator/acceptance reviewer (and thumbnail artist) and
+Gemini-based read-only reviewers — all disclosed in the repo. My house
 now holds a better morning standup than most teams I've worked on.*
 
 #AllThingsAgenticHackathon

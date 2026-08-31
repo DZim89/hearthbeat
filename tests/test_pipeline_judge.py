@@ -62,3 +62,76 @@ async def test_full_pipeline_on_fixtures(tmp_path):
         "judge-test", trigger_source="manual", triggered_by="pytest"
     )
     assert again.get("noop") == "already_completed"
+
+
+@pytest.mark.asyncio
+async def test_retry_after_failure_reuses_checkpoints_no_duplicate_actions():
+    """The tested retry path: a completed-then-failed run re-fires, resumes
+    from surviving checkpoints, and produces the SAME action/slip documents —
+    ids and counts unchanged."""
+    from app.runcontrol import execute_run
+    from app.stores import ACTIONS, SLIPS, db
+
+    rid = "judge-retry"
+    first = await execute_run(rid, trigger_source="manual", triggered_by="pytest",
+                              red_team=True)
+    assert first["status"] == "done"
+
+    def _ids(coll):
+        return {d.id for d in db().collection(coll).where("run_id", "==", rid).get()}
+
+    actions_before, slips_before = _ids(ACTIONS), _ids(SLIPS)
+    assert actions_before  # the fixture plan must dispatch something
+
+    # Simulate a crash inside the dispatch window: run marked failed, the
+    # dispatched checkpoint lost, earlier checkpoints intact.
+    ref = db().collection("runs").document(rid)
+    ref.update({"status": "failed"})
+    ref.collection("checkpoints").document("dispatched").delete()
+
+    second = await execute_run(rid, trigger_source="manual", triggered_by="pytest",
+                               red_team=True)
+    assert second["status"] == "done"
+    assert second["attempt"] == 2
+    assert set(second.get("resumed_from") or []) >= {"gathered", "planned", "reviewed"}
+
+    assert _ids(ACTIONS) == actions_before
+    assert _ids(SLIPS) == slips_before
+
+    # And the completed run still no-ops on a third fire.
+    third = await execute_run(rid, trigger_source="manual", triggered_by="pytest")
+    assert third.get("noop") == "already_completed"
+
+
+@pytest.mark.asyncio
+async def test_invalid_preclaim_config_creates_no_run_doc(monkeypatch):
+    """Config validation happens BEFORE the claim: a busted production config
+    must not strand a status=running date-keyed doc."""
+    from app.runcontrol import execute_run
+    from app.stores import db
+
+    monkeypatch.setenv("K_SERVICE", "svc")  # strict mode
+    monkeypatch.delenv("SIMULATED_HOME", raising=False)
+    for k in ("EGRESS_SALT", "EGRESS_ALIAS_HASHES", "EGRESS_KNOWN_TOKENS"):
+        monkeypatch.delenv(k, raising=False)
+    with pytest.raises(RuntimeError, match="egress guard config invalid"):
+        await execute_run("judge-badcfg", trigger_source="manual", triggered_by="pytest")
+    assert not db().collection("runs").document("judge-badcfg").get().exists
+
+
+@pytest.mark.asyncio
+async def test_constructor_failure_after_claim_marks_run_failed(monkeypatch):
+    """Defense in depth: if plugin construction raises AFTER the claim, the
+    run doc must end status=failed — never stranded status=running."""
+    from app import runcontrol
+    from app.stores import db
+
+    def _boom(*a, **k):
+        raise RuntimeError("constructor exploded")
+
+    monkeypatch.setattr(runcontrol, "LedgerPlugin", _boom)
+    with pytest.raises(RuntimeError, match="constructor exploded"):
+        await runcontrol.execute_run("judge-ctorfail", trigger_source="manual",
+                                     triggered_by="pytest")
+    doc = db().collection("runs").document("judge-ctorfail").get().to_dict() or {}
+    assert doc.get("status") == "failed"

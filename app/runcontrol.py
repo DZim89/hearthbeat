@@ -148,20 +148,32 @@ async def execute_run(
     red_team: bool = False,
 ) -> dict[str, Any]:
     run_id = run_id or today_run_id()
+
+    # Pure config validation BEFORE claiming: invalid production config must
+    # produce a non-2xx with NO date-keyed run doc (a stranded status=running
+    # doc would block the real cron for the heartbeat-staleness window).
+    config_errors = ledger.validate_egress_config()
+    if config_errors:
+        raise RuntimeError("egress guard config invalid: " + "; ".join(config_errors))
+
     claim = claim_run(run_id, trigger_source, triggered_by)
     if not claim.get("claimed"):
         return {"run_id": run_id, **claim}
 
-    checkpoints = load_checkpoints(run_id)
-    done_stages = set(checkpoints)
-    # A takeover on a fresh instance must resume the budget meter, not reset it.
-    prior_cost = int((_run_ref(run_id).get().to_dict() or {}).get("cost_microcents") or 0)
-    ledger.RUN_COST_MICROCENTS[run_id] = max(
-        ledger.RUN_COST_MICROCENTS.get(run_id, 0), prior_cost
-    )
-    plugin = LedgerPlugin(run_id, trigger_source)
-    ledger.ACTIVE[run_id] = plugin
+    plugin: LedgerPlugin | None = None
     try:
+        checkpoints = load_checkpoints(run_id)
+        done_stages = set(checkpoints)
+        # A takeover on a fresh instance must resume the budget meter, not reset it.
+        prior_cost = int((_run_ref(run_id).get().to_dict() or {}).get("cost_microcents") or 0)
+        ledger.RUN_COST_MICROCENTS[run_id] = max(
+            ledger.RUN_COST_MICROCENTS.get(run_id, 0), prior_cost
+        )
+        # Constructed INSIDE the failure envelope (defense in depth): if the
+        # constructor still raises, the claimed run is marked failed below —
+        # never left status=running to strand the next cron fire.
+        plugin = LedgerPlugin(run_id, trigger_source)
+        ledger.ACTIVE[run_id] = plugin
         root = build_pipeline(done_stages)
         adk_app = App(name="app", root_agent=root, plugins=[plugin])
         sessions = InMemorySessionService()
@@ -207,13 +219,14 @@ async def execute_run(
             "trigger_source": trigger_source,
         }
     except Exception as e:
-        plugin.emit_public("run_failed", error=str(e)[:300])
-        plugin.sink.flush()
+        if plugin is not None:
+            plugin.emit_public("run_failed", error=str(e)[:300])
+            plugin.sink.flush()
         try:
             _run_ref(run_id).update({"status": "failed", "error": str(e)[:500]})
         except Exception:  # noqa: BLE001
             pass
         raise
     finally:
-        if ledger.ACTIVE.get(run_id) is plugin:
+        if plugin is not None and ledger.ACTIVE.get(run_id) is plugin:
             del ledger.ACTIVE[run_id]
