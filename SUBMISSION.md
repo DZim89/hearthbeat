@@ -77,17 +77,16 @@ pass (ollama, on our own GPU box): the map tokenizes the family, a local Gemma/Q
 for additional PII the map can't know — a teacher's name and phone in a school
 email. In the cloud, every instrumented outbound Gemini request is checked against the
 **configured protected-alias hash set**; a match blocks the model call. BigQuery's
-verdict for the filmed run: zero protected-alias matches — the only rows the
-violations view has ever held are the guard blocking our own build mistakes,
-kept and shown separately. (During the build this
+verdict for the filmed run is zero protected-alias matches. Historical blocked
+rows are kept and shown separately as caught build failures. (During the build this
 guard caught a genuinely misconfigured mirror and refused to talk to Gemini —
 we kept the story in the README.)
 
 **Run integrity.** `POST /run` authenticates the configured invoker principal
 via OIDC; Scheduler history/timing corroborate cron origin. Filming and judge runs are labeled `manual`,
 structurally. Runs are date-keyed with Firestore `create()` preconditions,
-stage-checkpointed, and resumable: under the retry paths we tested (kill
-mid-run, re-fire), it finishes without duplicating a single action.
+stage-checkpointed, and resumable. The dispatcher creates content-hash action
+documents and reuses them under the tested kill-and-retry path.
 
 **Built with.** Google ADK (SequentialAgent / ParallelAgent / LoopAgent /
 custom BaseAgents / BasePlugin / structured outputs),
@@ -119,7 +118,8 @@ SIMULATED_HOME=1 docker compose up
 # open http://localhost:8080/missioncontrol
 ```
 Zero Google credentials; the Firestore emulator + recorded model responses +
-a simulated home run the identical pipeline. Disclosures in README →
+a simulated home run the same orchestration, policy, and dispatch code paths.
+Disclosures in README →
 "Honesty ledger".
 
 ## Team / AI disclosure

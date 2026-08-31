@@ -97,8 +97,8 @@ free emulator exists (BigQuery → JSONL), each disclosed.
 - Per-run cost: a run-scoped list-rate estimate at official configured
   rates (`runs_v.cost_cents` in BigQuery); a configured observed-spend
   threshold makes the policy layer deny the plan (not a hard billing cap).
-- `egress_violations_v`: zero protected-alias matches in the filmed run
-  (its only rows ever: the guard catching our own build misconfigurations).
+- `egress_violations_v`: zero protected-alias matches in the filmed run.
+  Historical blocked rows are shown separately as caught build failures.
 - Unit tests: the scrub round-trip and policy table tests are the graded core.
 
 Repo: https://github.com/DZim89/hearthbeat · Mission Control (live,
