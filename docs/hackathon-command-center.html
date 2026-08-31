@@ -116,7 +116,7 @@ li{margin:.15rem 0}
       <li><b>AI coding assistants are explicitly allowed</b> — with disclosure of any other pre-existing code/work incorporated.</li>
       <li>A Project "must not have been developed, or derived from a Project developed, with financial or preferential support from the Sponsor or Administrator."</li>
       <li>The submission form asks "which Google SDK you used and the date you started the project" (checklist update).</li>
-      <li><span class="badge strat">OUR STRATEGY</span> All code written Aug 30–31; repo history starts Aug 30 (verifiable in git). Pre-existing Home Assistant + local model servers are environment/data sources, disclosed. Claude Code assistance disclosed in the README "Honesty ledger".</li>
+      <li><span class="badge strat">OUR STRATEGY</span> All Hearthbeat application code was written Aug 30–31; the first reachable commit is Aug 30 at 4:07:10 PM PDT (verifiable in git). Pre-existing Home Assistant + local model servers are environment/data sources, disclosed. The home-grown AI Agent Fleet Workspace and its Claude Code, Gemini/Antigravity, Codex, and geminiclaw assistance are disclosed in the README "Honesty ledger".</li>
     </ul>
   </div>
 </details>
@@ -410,7 +410,7 @@ li{margin:.15rem 0}
 <h2>Checkpoint log</h2>
 <table>
 <tr><th>When (PT)</th><th>Checkpoint</th></tr>
-<tr><td>Aug 30 16:0x</td><td>Gate probes PASSED (gemini-3.5-flash @ global only); plan GO.</td></tr>
+<tr><td>Aug 30 16:07:10 PDT</td><td>First reachable Git commit; gate probes PASSED (gemini-3.5-flash @ global only); plan GO.</td></tr>
 <tr><td>Aug 30 ~17:00</td><td>Deployed to Cloud Run; cloud E2E done; cron + OIDC dry-fire proven (`trigger_source=scheduled`).</td></tr>
 <tr><td>Aug 30 evening</td><td>85-agent adversarial review → 22 findings fixed (2 critical: history name leak → filter-repo rewrite; scrub boundary gap → substring + token-vocabulary guards). Judge fixtures re-recorded clean; judge mode proven from clean clone.</td></tr>
 <tr><td>Aug 31 00:0x</td><td>Evening window slipped → 6:45 cron is the money shot; house armed autonomously; repo pushed PRIVATE.</td></tr>

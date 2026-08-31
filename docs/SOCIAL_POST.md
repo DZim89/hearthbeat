@@ -22,8 +22,9 @@ SIMULATED_HOME=1 docker compose up
 Repo: https://github.com/DZim89/hearthbeat
 Live Mission Control: https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
-Built solo overnight for the All Things Agentic Hackathon — category: The
-Taskmaster — with AI-assisted implementation and review from Claude Code,
-Gemini/Antigravity, Codex, and geminiclaw.
+Built solo from a first commit at 4:07:10 PM PDT on August 30 for the All
+Things Agentic Hackathon — category: The Taskmaster — using my home-grown AI
+Agent Fleet Workspace with Claude Code, Gemini/Antigravity, Codex, and
+geminiclaw under my direction and evidence gates.
 
 #AllThingsAgenticHackathon

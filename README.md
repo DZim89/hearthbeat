@@ -203,14 +203,15 @@ docs/       architecture, demo runbook, the HA automation
 - **The calendar conflict in the demo video was seeded** (soccer practice vs.
   dinner at Grandma's) so the story is legible on camera. The detection,
   planning, refusal, approval, and calendar write are all real and live.
-- **AI assistance**: **Claude Code** (Anthropic) and **Antigravity with Gemini
-  3.7 Flash High** authored implementation and public-copy changes under
-  Donny's direction. **Codex Desktop** (OpenAI) coordinated the work,
-  independently reviewed it, generated the thumbnail, and applied final
-  claim-discipline corrections. **geminiclaw** provided read-only Google-stack
-  reviews. The pre-existing Home Assistant installation and local model
-  servers (ollama/vLLM) are environment/data sources, not part of this
-  submission's codebase.
+- **AI assistance**: this solo build used Donny's home-grown **AI Agent Fleet
+  Workspace**, a private multi-agent engineering environment with a shared
+  plan, bounded work, one source of truth, and evidence gates. Claude Code,
+  Antigravity/Gemini, Codex, and geminiclaw assisted across research,
+  implementation, testing, and adversarial review under Donny's direction.
+  The first reachable commit is **August 30, 2026 at 4:07:10 PM PDT**; all
+  Hearthbeat application code was authored August 30–31. The pre-existing
+  Home Assistant installation and local model servers (ollama/vLLM) are
+  environment/data sources, not part of this submission's codebase.
 - **Test/demo runs** use suffixed run ids (`YYYY-MM-DD-e2eN`) and
   `trigger_source=manual`. For the filmed scheduled run, Scheduler history and
   timing corroborate cron origin.

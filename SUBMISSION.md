@@ -7,8 +7,8 @@
 ## Project name
 Hearthbeat
 
-## Elevator pitch (≤200 chars — verified 183)
-A no-chat household agent that turns school email and calendars into a safe morning plan—acting autonomously when confidence is high and asking only when a human decision is required.
+## Elevator pitch (≤200 chars)
+A no-chat household agent that turns school email and calendars into a safe morning plan—acting when policy permits and asking only when a human decision is required.
 
 ## Category (exactly one)
 **Taskmaster**
@@ -51,61 +51,175 @@ cloud evidence uses run ID `2026-08-31`.
 
 ## Text description (long form)
 
-**Why I built it.** Our school mornings can fail in very ordinary ways: an
-important email gets buried, the kids do not know what to prepare on their own,
-or an after-school change surfaces only when we reach drop-off. One especially
-rough morning also exposed that we had run out of easy breakfast food. I did
-not pretend a one-night build could solve every household problem. I chose the
-repeatable failure at the center — schedule and school-email facts reaching us
-too late — and built the smallest dependable agent that could act before the
-morning became stressful.
+## Inspiration
 
-**What it does.** Every morning at 6:45, Cloud Scheduler fires hearthbeat.
-Four parallel ADK gatherers read a token-scrubbed Firestore mirror of our real
-home — Home Assistant state, the family calendar, the school-email inbox. A
-Gemini 3.5 planner drafts the day as structured output: a morning briefing,
-and actions like "pause the kids' TV", "create a proposed calendar event for
-tonight's collision", "draft a message about moving dinner". A LoopAgent policy critic
-argues with that plan until a deterministic, default-deny whitelist is
-satisfied — a critique is only trusted if it hash-matches the exact plan
-revision it graded. A pure-code dispatcher writes content-hashed action docs
-to Firestore. Then the house takes over: a poller inside the home PULLS the
-actions, rehydrates the privacy tokens locally, re-validates the policy a
-third time, and executes in Home Assistant. Anything that touches a person
-stops at a permission slip on a real phone — Approve or Deny; approval
-releases the drafted message to the household notification channel (it never
-messages the recipient directly).
+My wife and I both work full-time, and we are raising four kids. Getting
+everyone ready for school, fed, and to the right activity—while also remembering
+the dog, the cat litter, appointments, permission slips, and everything else—can
+feel overwhelming. It starts in the morning, but if I am honest, the mental
+checklist runs until we fall asleep.
 
-**The twist.** There is no chat window. No prompt box. The interfaces are a
-cron, a read-only Mission Control page, a briefing that lands on a phone, and
-things quietly happening in a real house with three kids in it.
+I tend to build AI the same way I approach any useful automation: I look for
+work that creates repeated stress, drains attention, or is simply a poor use of
+a person's time, and then I try to remove that friction. If it is frustrating
+for me, another family is probably living through some version of it too.
 
-**Privacy as architecture, not policy.** Known family aliases are
-deterministically tokenized on the intended runtime path before AND after a local **Gemma 3**
-pass (ollama, on our own GPU box): the map tokenizes the family, a local Gemma/Qwen tier scans
-for additional PII the map can't know — a teacher's name and phone in a school
-email. In the cloud, every instrumented outbound Gemini request is checked against the
-**configured protected-alias hash set**; a match blocks the model call. BigQuery's
-verdict for the filmed run is zero protected-alias matches. Historical blocked
-rows are kept and shown separately as caught build failures. (During the build this
-guard caught a genuinely misconfigured mirror and refused to talk to Gemini —
-we kept the story in the README.)
+Hearthbeat came from a few very ordinary failures: an important school email
+got buried, the kids did not know what to prepare on their own, and an
+after-school schedule change surfaced only when we reached drop-off. One rough
+morning also revealed that we had run out of easy breakfast food. I did not
+pretend a deadline-night build could solve the entire household. I chose the
+repeatable failure at the center—school-email and calendar facts reaching us too
+late—and built the smallest dependable agent that could act before the morning
+became stressful.
 
-**Run integrity.** `POST /run` authenticates the configured invoker principal
-via OIDC; Scheduler history/timing corroborate cron origin. Filming and judge runs are labeled `manual`,
-structurally. Runs are date-keyed with Firestore `create()` preconditions,
-stage-checkpointed, and resumable. The dispatcher creates content-hash action
-documents and reuses them under the tested kill-and-retry path.
+## What it does
 
-**Built with.** Google ADK (SequentialAgent / ParallelAgent / LoopAgent /
-custom BaseAgents / BasePlugin / structured outputs),
-Gemini 3.5 Flash + Flash-Lite on Vertex AI (location=global), Cloud Run,
-Cloud Scheduler (OIDC), Pub/Sub + DLQ with a native BigQuery subscription,
-Firestore, BigQuery, and local Gemma 3 as a load-bearing privacy tier.
-Each run's cost is an estimated list-rate model cost for this run from the configured
-official per-token rates, recorded in BigQuery (`runs_v.cost_cents`) and on
-Mission Control; a configured observed-spend threshold causes the policy
-layer and dispatcher to deny the action plan (not a hard billing cap).
+Every morning at 6:45, Cloud Scheduler starts Hearthbeat. Four parallel Google
+ADK gatherers read a tokenized Firestore mirror of Home Assistant state, the
+family calendar, and the school-email inbox. Gemini turns those scattered facts
+into a structured morning briefing and a bounded action plan.
+
+There is no chat window and no prompt to remember. Hearthbeat can create a
+permitted calendar proposal and deliver the household briefing autonomously.
+If a proposed action requires a human decision—such as releasing a drafted
+person-to-person message—it stops at an Approve/Deny permission slip on a real
+phone. A planted front-door action takes the third path: deterministic policy
+refuses it and records the denial as evidence.
+
+Mission Control is a read-only, run-scoped view of what happened: each stage,
+action, approval state, model ID, trigger provenance, estimated list-rate model
+cost, and protected-alias scan result. Most agents only answer. Hearthbeat has
+three outcomes—act, ask, or refuse—and Mission Control shows which path it
+took. The result is less remembering, less nagging, and fewer rushed surprises.
+
+## How we built it
+
+The first reachable Git commit is timestamped **August 30, 2026 at 4:07:10 PM
+PDT**. From that point, I built Hearthbeat as a focused overnight sprint with a
+single rule: finish a narrow, dependable system before adding more ideas.
+
+The cloud pipeline uses Google ADK `ParallelAgent`, `SequentialAgent`, and
+`LoopAgent` primitives with structured outputs. Gemini 3.5 Flash-Lite gathers
+context; Gemini 3.5 Flash plans and critiques; a deterministic policy gate
+reviews the exact hash-bound plan; and a pure-code dispatcher writes
+content-addressed action documents to Firestore. The house then pulls approved
+actions from the cloud, revalidates policy locally, rehydrates privacy tokens,
+and executes through Home Assistant. The cloud never reaches directly into the
+home.
+
+The decision contract is intentionally simpler than the model:
+
+$$
+\operatorname{Execute}(a)
+=
+\operatorname{Allowlisted}(a)
+\land
+\left(\neg \operatorname{HumanGated}(a)
+\lor \operatorname{Approved}(a)\right)
+$$
+
+In plain language: an action must be explicitly allowed, and any human-gated
+action must also be approved. Unknown, malformed, or incomplete output fails
+closed.
+
+Privacy is an architectural boundary. On the intended filmed path, configured
+family aliases are tokenized locally; a local Gemma/Qwen tier scans free text
+for additional PII; and every instrumented outbound Gemini request is checked
+against the configured protected-alias hash set. A match blocks the model call.
+The filmed run reports its own protected-alias count; historical blocked rows
+are labeled separately as caught build failures.
+
+For failure tolerance, runs are date-keyed, stage-checkpointed, and resumable.
+Action documents use content hashes and are reused under the tested retry path.
+Cloud Scheduler uses OIDC, while attempt-scoped provenance keeps a scheduled
+run, manual run, or manual resume visibly distinct. Pub/Sub and a dead-letter
+topic carry audit events into BigQuery.
+
+Judges can also clone the public repository and run the disclosed fixture house
+with one command and no Google credentials. The Firestore emulator, recorded
+model responses, and simulated Home Assistant exercise the same orchestration,
+policy, and dispatch paths.
+
+## Challenges we ran into
+
+- **Making autonomy useful without making it reckless.** A model can propose
+  an action, but it cannot grant itself authority. The deterministic whitelist,
+  permission-slip boundary, and fail-closed parsing became the real product.
+- **Keeping household data local while still using cloud reasoning.** Token
+  replacement alone was not enough, so the runtime combines a known-alias map,
+  local free-text scanning, and a protected-alias egress guard. That guard
+  caught a real build misconfiguration and refused the Gemini call.
+- **Proving what actually happened.** Scheduler identity, retries, resumes,
+  model usage, privacy checks, and cost can easily become vague claims. We made
+  them run-scoped evidence instead.
+- **Retries without duplicate action documents.** A resumed run continues from
+  a checkpoint and reuses the same content-hash action document under the
+  tested retry path. This is not a universal exactly-once guarantee for
+  external Home Assistant side effects.
+- **Shipping honestly under a hard deadline.** We cut attractive features such
+  as pantry awareness, learned trust, and role-specific child briefings rather
+  than describe roadmap ideas as finished capabilities.
+
+## Accomplishments that we're proud of
+
+- A genuine no-chat agent that wakes on schedule and produces visible household
+  consequences instead of another conversational demo.
+- A clean three-way action boundary: autonomous when explicitly allowed,
+  approval-gated when a person must decide, and denied when the action is
+  unknown or forbidden.
+- A privacy path designed around tokenized identities and fail-closed egress,
+  with the filmed result stated only for the exact run being shown.
+- Mission Control evidence that connects the agent's reasoning to actions,
+  approvals, provenance, privacy checks, model use, and cost.
+- A credential-free judge mode plus a current full-suite result of **95 passing
+  tests**, with six Firestore-emulator tests skipped when the emulator was not
+  running.
+- A complete working system built from the repository's first commit at 4:07:10
+  PM PDT on August 30 through the overnight submission sprint.
+
+## What we learned
+
+The most important lesson was that safe autonomy is not primarily a prompting
+problem. The model is useful for interpreting context and proposing a plan, but
+trust comes from deterministic authority boundaries, content-hash
+action-document reuse under the tested retry path, observable evidence, and a
+clear human decision point.
+
+We also learned that an agent feels more natural when the user does less. A
+scheduled briefing, a calendar proposal, and one meaningful permission slip can
+be more useful than a sophisticated chat interface. Finally, narrowing claims
+to the exact run made the engineering better: if a privacy, provenance, cost, or
+reliability statement could not be shown on screen or reproduced from the
+repository, it did not belong in the submission.
+
+## What's next for Hearthbeat
+
+The next priorities are an injection-resistant school-mail boundary,
+role-aware briefings that give adults and children only the information they
+need, and consent-bounded memory whose trust is earned per action, expires, and
+can always be revoked. After those foundations, Hearthbeat can look ahead to
+district schedules, weather, presence, and pantry readiness so tomorrow's
+problems are handled tonight—without turning the home into another app the
+family has to manage.
+
+## AI-assisted build provenance
+
+This is a solo entry by Donny Zimmerman, built with a home-grown **AI Agent
+Fleet Workspace**: a private multi-agent engineering environment that lets me
+give several AI systems a shared plan, bounded work, a single source of truth,
+and evidence gates before changes are accepted. I directed the problem,
+product decisions, household data boundaries, safety policy, acceptance
+criteria, and final submission; the fleet accelerated research,
+implementation, testing, and adversarial review.
+
+The workspace used Claude Code, Antigravity/Gemini, Codex, and geminiclaw. Its
+private fleet infrastructure is intentionally outside this public entry, but
+its design philosophy is visible in Hearthbeat: specialize the agents, bound
+their authority, and require evidence before action. All Hearthbeat application
+code was authored August 30–31, 2026. The pre-existing Home Assistant
+installation and local model servers are environment and data sources, not
+submission code.
 
 ## Built with (tags)
 google-adk, gemini, vertex-ai, cloud-run, cloud-scheduler, pub-sub, firestore,
@@ -132,10 +246,9 @@ Disclosures in README →
 "Honesty ledger".
 
 ## Team / AI disclosure
-Solo build (Donny Zimmerman). AI tools, disclosed: Claude Code (Anthropic) and
-Antigravity with Gemini 3.7 Flash High authored implementation and public-copy
-changes under Donny's direction; Codex Desktop (OpenAI) coordinated,
-independently reviewed, generated the thumbnail, and applied final
-claim-discipline corrections; geminiclaw provided read-only Google-stack
-reviews. All code was authored Aug 30–31, 2026. Pre-existing Home Assistant +
-local model servers are environment/data sources only.
+Solo build by Donny Zimmerman using a home-grown AI Agent Fleet Workspace.
+Claude Code, Antigravity/Gemini, Codex, and geminiclaw assisted across research,
+implementation, testing, and adversarial review under Donny's direction and
+evidence gates. The first reachable commit is August 30, 2026 at 4:07:10 PM PDT;
+all Hearthbeat application code was authored August 30–31. Pre-existing Home
+Assistant and local model servers are environment/data sources only.

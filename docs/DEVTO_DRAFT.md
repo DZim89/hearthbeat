@@ -111,11 +111,11 @@ free emulator exists (BigQuery → JSONL), each disclosed.
 Repo: https://github.com/DZim89/hearthbeat · Mission Control (live,
 read-only, token-space): https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
-*Built with Claude Code and Antigravity/Gemini 3.7 Flash High as coding
-agents under my direction, with Codex Desktop as coordinator, independent
-reviewer, thumbnail artist, and final claim-discipline editor. geminiclaw
-provided read-only Google-stack review; all assistance is disclosed in the
-repo. My house now holds a better morning standup than most teams I've worked
-on.*
+*I built Hearthbeat solo with my home-grown AI Agent Fleet Workspace: a
+private multi-agent engineering environment that gives Claude Code,
+Antigravity/Gemini, Codex, and geminiclaw a shared plan, bounded work, and
+evidence gates under my direction. The first repository commit is timestamped
+August 30, 2026 at 4:07:10 PM PDT. My house now holds a better morning standup
+than most teams I've worked on.*
 
 #AllThingsAgenticHackathon
