@@ -3,7 +3,7 @@ name = "hearthbeat"
 version = "0.1.0"
 description = "Autonomous household-operations agent: a Cloud Scheduler-fired ADK pipeline that runs a family home's morning — no chat UI."
 authors = [
-    {name = "Donny Zimmerman", email = "223544382+DZim89@users.noreply.github.com"},
+    {name = "DZim89", email = "223544382+DZim89@users.noreply.github.com"},
 ]
 
 dependencies = [
