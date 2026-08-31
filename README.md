@@ -47,7 +47,7 @@ Then open **http://localhost:8080/missioncontrol** and watch a full run:
 The hosted, live-against-the-real-house instance is here:
 **https://hearthbeat-369944070051.us-central1.run.app/missioncontrol**
 *(read-only; it shows whatever this morning's real run did — in token space:
-known family aliases are tokenized before anything leaves the house).*
+known family aliases are tokenized locally on the intended runtime path).*
 
 ---
 

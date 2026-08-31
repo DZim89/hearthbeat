@@ -6,14 +6,15 @@ My house now runs its own morning standup. 🫀
 
 No chat UI — a Cloud Scheduler cron fires a Google ADK pipeline (parallel
 gatherers → Gemini 3.5 planner → a LoopAgent policy critic that argues with
-the plan) on Cloud Run. My phone gets a permission slip before it messages a
-human. The house PULLS its actions — the cloud can't reach in.
+the plan) on Cloud Run. My phone gets a permission slip before a person-facing
+draft can be released to the household notification channel. The house PULLS
+its actions — the cloud can't reach in.
 
-The part I'm proudest of: known family names are tokenized before anything
-leaves the house — deterministic map + local Gemma 3, plus a salted-hash
-egress guard in the cloud that once refused to call Gemini because I
-misconfigured a mirror. BigQuery shows
-zero protected-alias matches in the filmed run — a query, not a promise.
+The part I'm proudest of: on the filmed path, configured family aliases are
+tokenized locally; a local Gemma/Qwen tier scans additional PII; and
+instrumented Gemini calls pass a salted-hash protected-alias guard. That guard
+once refused a call because I misconfigured a mirror. BigQuery shows zero
+protected-alias matches in the filmed run — a query, not a promise.
 
 One command for the whole demo from a clean clone:
 SIMULATED_HOME=1 docker compose up
@@ -21,7 +22,8 @@ SIMULATED_HOME=1 docker compose up
 Repo: https://github.com/DZim89/hearthbeat
 Live Mission Control: https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
-Built solo overnight (with Claude Code as pair) for the All Things Agentic
-Hackathon — category: The Taskmaster.
+Built solo overnight for the All Things Agentic Hackathon — category: The
+Taskmaster — with AI-assisted implementation and review from Claude Code,
+Gemini/Antigravity, Codex, and geminiclaw.
 
 #AllThingsAgenticHackathon
