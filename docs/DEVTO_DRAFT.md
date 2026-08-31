@@ -1,6 +1,6 @@
-# Building hearthbeat in one night: an ADK agent that runs my house's morning (and audits every outbound call for protected aliases)
+# Building Hearthbeat in One Night: A Safe Household Agent with Google ADK
 
-*I created this article for the purpose of entering the All Things Agentic
+*This article was created for the purposes of entering the All Things Agentic
 Hackathon. Category: The Taskmaster.*
 
 I built an autonomous household-operations agent in one night with Google's
@@ -20,8 +20,9 @@ facts reaching us too late — and built a dependable scheduled agent around it.
 No chat UI: a Cloud Scheduler cron fires an ADK pipeline on Cloud Run that
 reads a token-scrubbed mirror of my actual home (Home Assistant, family
 calendar, school email), plans the day, refuses its own bad ideas against a
-default-deny whitelist, asks my phone for a permission slip before messaging a
-human, and then my house *pulls* the approved actions — the cloud has no way in.
+default-deny whitelist, asks my phone for a permission slip before releasing a
+person-facing draft, and then my house *pulls* approved actions—the cloud
+service does not initiate connections into the home.
 
 ## Hour 0: kill the scary unknowns first
 
@@ -54,10 +55,11 @@ Assistant. Default-deny, enforced three times, all from one YAML file.
 
 ## Privacy that doesn't depend on a model behaving
 
-House-side, every piece of free text goes through `deep_scrub`: deterministic
-token map → **local Gemma 3 via ollama** (a local Gemma/Qwen tier scans for
-additional PII the family map can't know — the teacher's name and phone in a school email)
-→ token map again → scrub validation. My 4080 is so VRAM-contended by other local
+On the intended house-to-cloud path, mirrored and ingested free text goes
+through `deep_scrub`: deterministic token map → **local Gemma 3 via ollama**
+(a local Gemma/Qwen tier scans for additional PII the family map can't know —
+the teacher's name and phone in a school email) → token map again → scrub
+validation. My 4080 is so VRAM-contended by other local
 models that gemma runs mostly on CPU at ~12 tok/s — fine for short scans, and
 the ledger records which tier did each pass (`PRIVACY_TIER=qwen` is the
 fallback).
