@@ -20,7 +20,7 @@ tier running inside the house.
 Requires only Docker (no Google account, no credentials, no house):
 
 ```bash
-git clone https://github.com/dzimm3rman/hearthbeat.git
+git clone https://github.com/DZim89/hearthbeat.git
 cd hearthbeat
 SIMULATED_HOME=1 docker compose up
 ```

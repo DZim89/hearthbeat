@@ -28,7 +28,7 @@ from app.ledger import LedgerPlugin
 from app.policy import load_policy
 from app.stores import RUNS, db
 
-HEARTBEAT_STALE_SECONDS = 600
+HEARTBEAT_STALE_SECONDS = int(os.environ.get("HEARTBEAT_STALE_SECONDS", "600"))
 
 STAGE_STATE_KEYS = {
     "gathered": ["home_state", "calendar", "school_mail", "energy"],

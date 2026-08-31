@@ -100,7 +100,7 @@ free emulator exists (BigQuery → JSONL), each disclosed.
 - `egress_violations_v`: **0 rows**.
 - Unit tests: the scrub round-trip and policy table tests are the graded core.
 
-Repo: https://github.com/dzimm3rman/hearthbeat · Mission Control (live,
+Repo: https://github.com/DZim89/hearthbeat · Mission Control (live,
 read-only, token-space): https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
 *Built with Claude Code as the coding agent — disclosed in the repo. My house

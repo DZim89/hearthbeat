@@ -65,7 +65,7 @@ google-adk, gemini, vertex-ai, cloud-run, cloud-scheduler, pub-sub, firestore,
 bigquery, gemma, ollama, python, fastapi, home-assistant, docker
 
 ## Links
-- Repo (public): https://github.com/dzimm3rman/hearthbeat
+- Repo (public): https://github.com/DZim89/hearthbeat
 - Hosted (read-only Mission Control): https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 - Video (public YouTube, ≤4:00, EN captions): «FILL AFTER UPLOAD»
 - Architecture diagram: in repo — docs/architecture.png (+ docs/ARCHITECTURE.md)
@@ -74,7 +74,7 @@ bigquery, gemma, ollama, python, fastapi, home-assistant, docker
 
 ## Try it (judges)
 ```bash
-git clone https://github.com/dzimm3rman/hearthbeat.git && cd hearthbeat
+git clone https://github.com/DZim89/hearthbeat.git && cd hearthbeat
 SIMULATED_HOME=1 docker compose up
 # open http://localhost:8080/missioncontrol
 ```

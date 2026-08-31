@@ -17,7 +17,7 @@ zero private egress — with a query, not a promise.
 One command for the whole demo from a clean clone:
 SIMULATED_HOME=1 docker compose up
 
-Repo: https://github.com/dzimm3rman/hearthbeat
+Repo: https://github.com/DZim89/hearthbeat
 Live Mission Control: https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
 
 Built solo overnight (with Claude Code as pair) for the All Things Agentic
