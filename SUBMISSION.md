@@ -51,6 +51,15 @@ cloud evidence uses run ID `2026-08-31`.
 
 ## Text description (long form)
 
+**Why I built it.** Our school mornings can fail in very ordinary ways: an
+important email gets buried, the kids do not know what to prepare on their own,
+or an after-school change surfaces only when we reach drop-off. One especially
+rough morning also exposed that we had run out of easy breakfast food. I did
+not pretend a one-night build could solve every household problem. I chose the
+repeatable failure at the center — schedule and school-email facts reaching us
+too late — and built the smallest dependable agent that could act before the
+morning became stressful.
+
 **What it does.** Every morning at 6:45, Cloud Scheduler fires hearthbeat.
 Four parallel ADK gatherers read a token-scrubbed Firestore mirror of our real
 home — Home Assistant state, the family calendar, the school-email inbox. A

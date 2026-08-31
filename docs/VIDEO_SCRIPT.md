@@ -49,7 +49,7 @@ argue with itself, dispatch, and the house quietly act."
 | P4 | Red team | `/trigger?red_team=1` (labeled manual) → denial rows: `unlisted_action_type:front_door_unlock` on Mission Control + BQ `denials_v` | "Planted forbidden action, refused in writing. Denials are data." |
 | P5 | Gemma / privacy | `ollama ps`; raw email → tokenized side-by-side; BQ: zero protected-alias matches for the filmed run; historical `egress_block` rows shown separately and explained | "On this filmed path, configured family aliases are tokenized locally; a local Gemma/Qwen tier scans additional PII; and instrumented Gemini requests are checked against the configured protected-alias hashes. This run shows zero matches. Historical blocked rows are shown separately as caught build failures." |
 | P6 | Console proof + judge mode (judge-mode run id shown) | Cloud Run service (sa-home), Scheduler SUCCESS history; `git clone` → `SIMULATED_HOME=1 docker compose up` → localhost Mission Control | "Live on Cloud Run, with a run-scoped list-rate cost estimate recorded in BigQuery — and judges get the whole house with one command from a clean clone." |
-| P7 | Close | Thumbnail card → URLs | "hearthbeat. The house that runs its own morning." |
+| P7 | Close | Thumbnail card → URLs | "Hearthbeat: less remembering, less nagging, and fewer rushed surprises." |
 
 ## Tight narration spine
 
@@ -58,9 +58,11 @@ do not race the visuals.
 
 **0:00–0:28 — hook and friction**
 
-> By breakfast, Hearthbeat has already turned school email and calendars into
-> a safe morning plan and a proposed calendar fix. There is no chat window and
-> no prompt to remember. The house runs its own morning standup.
+> I built Hearthbeat after mornings when school email got buried, an
+> after-school change surfaced only at drop-off, and the kids were stressed
+> before we left. By breakfast, Hearthbeat has already turned school email and
+> calendars into a safe plan and a proposed calendar fix. There is no chat
+> window and no prompt to remember. The house runs its own morning standup.
 
 **0:28–2:05 — uninterrupted live execution**
 
@@ -97,7 +99,7 @@ do not race the visuals.
 > This filmed run shows its own model IDs, actions, list-rate cost estimate, and
 > protected-alias match count. Judges can clone the public repository and run
 > the disclosed fixture house with one command and no Google credentials.
-> Hearthbeat: the house that runs its own morning.
+> Hearthbeat: less remembering, less nagging, and fewer rushed surprises.
 
 ## Integrity rules for the edit
 - The "LIVE — UNCUT" badge appears ONLY on the continuous take; everything

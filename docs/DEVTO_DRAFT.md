@@ -7,6 +7,13 @@ Agent Development Kit, Gemini 3.5 on Vertex, and a stack of Google Cloud
 plumbing — and the most interesting bugs were the ones my own privacy guard
 caught. Build log below, roughly in commit order.
 
+The motivation was painfully ordinary: a school email gets buried, the kids do
+not know what to prepare on their own, and an after-school change surfaces only
+when we reach drop-off. One rough morning also revealed that we had run out of
+easy breakfast food. I did not claim a one-night MVP could solve all of that. I
+started with the repeatable failure at the center — school-email and calendar
+facts reaching us too late — and built a dependable scheduled agent around it.
+
 ## The product in one sentence
 
 No chat UI: a Cloud Scheduler cron fires an ADK pipeline on Cloud Run that
