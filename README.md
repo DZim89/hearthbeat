@@ -232,3 +232,7 @@ configured official per-token rates (`config/prices.yaml`) and recorded in
 BigQuery (`runs_v.cost_cents`) and on Mission Control. A configured
 observed-spend threshold causes the policy layer and dispatcher to deny the
 action plan; it is not a hard billing cap.
+
+## License
+
+Hearthbeat is released under the [Apache License 2.0](LICENSE).
