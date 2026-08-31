@@ -74,6 +74,16 @@ def test_quiet_hours_window_crosses_midnight(policy):
     assert policy.in_quiet_hours(MIDDAY) is False
 
 
+def test_sensitive_action_is_quiet_hours_exempt_at_plan_time(policy):
+    # It stops at a permission slip regardless — the tap is the consent gate.
+    v = policy.check_action(
+        _action(action_type="notify_family_member", entity="[[P_GRANDMA]]",
+                message="hi", sensitive=True),
+        now=LATE_NIGHT,
+    )
+    assert "quiet_hours" not in v
+
+
 def test_human_approval_bypasses_quiet_hours(policy):
     v = policy.check_action(
         _action(action_type="notify_family_member", entity="[[P_GRANDMA]]",

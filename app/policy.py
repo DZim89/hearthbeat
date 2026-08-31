@@ -89,7 +89,11 @@ class Policy:
             violations.append("sensitive_target_requires_permission_slip")
 
         quiet_ok = bool(spec.get("quiet_ok", False))
-        bypass = human_approved and bool(
+        # A sensitive action can NEVER auto-execute — it always stops at a
+        # permission slip, and the human tap is itself the quiet-hours consent.
+        # So it is exempt at plan time; the poller re-checks with
+        # human_approved=True only after a real tap.
+        bypass = (human_approved or bool(action.get("sensitive"))) and bool(
             self.raw.get("human_approval_bypasses_quiet_hours", True)
         )
         if self.in_quiet_hours(now) and not quiet_ok and not bypass:
