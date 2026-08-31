@@ -107,6 +107,9 @@ def _detect_via_ollama(text: str) -> list[str]:
             "model": config.GEMMA_MODEL,
             "prompt": DETECT_PROMPT + text,
             "stream": False,
+            # Stay resident between the 15-min mirror cycles — a cold reload
+            # under GPU contention can blow the timeout (observed live).
+            "keep_alive": "2h",
             "options": {"num_predict": 512, "temperature": 0},
         },
         timeout=config.GATEWAY_TIMEOUT_S,
