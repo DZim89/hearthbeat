@@ -82,7 +82,7 @@ If the approval path is unavailable, show the unchanged awaiting-approval
 state and use:
 
 > This labeled pickup shows the personal action still held for my decision.
-> Hearthbeat can release the draft only to the configured household
+> The agent can release the draft only to the configured household
 > notification channel after approval.
 
 Before recording, clear unrelated notifications and exclude real contact
@@ -114,6 +114,11 @@ when its date-derived run ID matches production.
 
 > Hearthbeat: less remembering, less nagging, and fewer rushed
 > surprises—without another chat window.
+
+The submitted narration was synthesized with Gemini 3.1 Flash TTS Preview on
+Vertex AI using the Achird voice and contains SynthID. This is video-production
+assistance only; the filmed runtime models remain Gemini 3.5 Flash and
+Flash-Lite.
 
 ## Edit integrity and release gates
 

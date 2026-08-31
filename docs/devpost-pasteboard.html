@@ -135,29 +135,8 @@ $$</code>
 
     <article class="card wide">
       <div class="eyebrow">Additional information / Private judge field</div><h2>Testing instructions</h2>
-      <p class="help">Devpost and the judges can see this field, but it is not displayed publicly. The path below uses invented fixtures and recorded model responses; it needs no Google account, API key, or household access.</p>
-      <div class="field"><textarea class="story" id="testingInstructions" readonly spellcheck="false">No credentials are required.
-
-Quick inspection:
-https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
-
-Reproduce with disclosed fixtures (Docker required):
-
-git clone https://github.com/DZim89/hearthbeat.git
-cd hearthbeat
-
-macOS, Linux, or WSL:
-SIMULATED_HOME=1 docker compose up
-
-Windows PowerShell:
-$env:SIMULATED_HOME='1'
-docker compose up
-
-Observed validation timing: two fresh-clone, no-cache runs on the submission Windows/WSL/Docker host reached successful kickoff in 184.487 seconds and 194.845 seconds. These are host observations, not a cross-machine SLA; cached starts can be faster.
-
-When ready, open http://localhost:8080/missioncontrol. The fixture run starts automatically. Verify the gathered -> planned -> reviewed -> dispatched stages, the calendar action, the permission-gated message labeled judge_auto, the planted front_door_unlock denial, and the run-scoped protected-alias result.
-
-All people, messages, schedules, and home state are disclosed fictional fixtures. Recorded model responses make this path deterministic; no Google account, API key, or real-home access is needed.</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="testingInstructions">Copy testing instructions</button><button data-select="testingInstructions">Select all</button></div></div>
+      <p class="help">Devpost and the judges can see this field, but it is not displayed publicly. This copy is 241 characters, below Devpost's 255-character maximum.</p>
+      <div class="field"><textarea class="story" id="testingInstructions" readonly spellcheck="false">No credentials required. Open the live read-only Mission Control: https://hearthbeat-369944070051.us-central1.run.app/missioncontrol. For local judge mode, clone the repo and run: SIMULATED_HOME=1 docker compose up. Full steps are in README.</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="testingInstructions">Copy testing instructions</button><button data-select="testingInstructions">Select all</button></div></div>
     </article>
 
     <article class="card">
@@ -169,7 +148,7 @@ All people, messages, schedules, and home state are disclosed fictional fixtures
     <article class="card">
       <div class="eyebrow">Required project media</div><h2>Video demo link</h2>
       <p class="help">Paste the final public YouTube URL here after upload and logged-out verification. Never use private or unlisted visibility.</p>
-      <div class="field"><input id="videoUrl" data-persist type="url" placeholder="https://www.youtube.com/watch?v=..."><div class="actions" style="margin-top:9px"><button class="primary" data-copy="videoUrl">Copy video URL</button></div></div>
+      <div class="field"><input id="videoUrl" data-persist type="url" value="https://youtu.be/tv9DgNzF0Gc"><div class="actions" style="margin-top:9px"><button class="primary" data-copy="videoUrl">Copy video URL</button></div></div>
       <label class="check"><input data-persist type="checkbox" id="videoPublic"> Public visibility verified while logged out</label>
       <label class="check"><input data-persist type="checkbox" id="videoFour"> Runtime is under 4:00 and captions are enabled</label>
     </article>
@@ -184,8 +163,8 @@ All people, messages, schedules, and home state are disclosed fictional fixtures
 
     <article class="card">
       <div class="eyebrow">Additional information</div><h2>Google AI models used</h2>
-      <div class="field"><textarea id="models" readonly>Gemini 3.5 Flash; Gemini 3.5 Flash-Lite; Gemma 3 (local through Ollama)</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="models">Copy model list</button></div></div>
-      <p class="help">Only models that are implemented and evidenced are named.</p>
+      <div class="field"><textarea id="models" readonly>Gemini 3.5 Flash; Gemini 3.5 Flash-Lite; Gemini 3.1 Flash TTS Preview (demo narration on Vertex AI); Gemma 3 (local through Ollama)</textarea><div class="actions" style="margin-top:9px"><button class="primary" data-copy="models">Copy model list</button></div></div>
+      <p class="help">Gemini 3.5 Flash and Flash-Lite are the filmed runtime models. Gemini 3.1 Flash TTS Preview produced the Achird-voice demo narration on Vertex AI with SynthID. Gemma 3 is the local privacy tier.</p>
     </article>
     <article class="card">
       <div class="eyebrow">Startup Prize</div><h2>Leave both fields blank</h2>
@@ -226,7 +205,7 @@ Startup Excellence organization and corporate-email fields: leave blank</textare
         <label class="check"><input data-persist type="checkbox"> Live and repository links entered</label>
         <label class="check"><input data-persist type="checkbox"> Thumbnail/gallery image uploaded</label>
         <label class="check"><input data-persist type="checkbox"> Architecture diagram uploaded</label>
-        <label class="check"><input data-persist type="checkbox"> Gemini 3.5 Flash, Flash-Lite, and Gemma 3 entered</label>
+        <label class="check"><input data-persist type="checkbox"> Runtime, TTS narration, and local Gemma models entered</label>
         <label class="check"><input data-persist type="checkbox"> Startup Prize fields left blank</label>
         <label class="check"><input data-persist type="checkbox"> Draft saved - final Submit not clicked</label>
       </div>

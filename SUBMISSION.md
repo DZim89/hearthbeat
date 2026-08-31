@@ -33,24 +33,26 @@ A no-chat household agent that turns school email and calendars into a safe morn
   BigQuery, and Vertex AI.
 - Architecture diagram upload: `docs/architecture.png`
 - Startup-prize organization and corporate-email fields: leave blank
-- Google AI models: **Gemini 3.5 Flash; Gemini 3.5 Flash-Lite; Gemma 3
-  (local through Ollama)**
+- Google AI models: **Gemini 3.5 Flash; Gemini 3.5 Flash-Lite; Gemini 3.1
+  Flash TTS Preview (demo narration on Vertex AI); Gemma 3 (local through
+  Ollama)**
 - Bonus content URL: fill after the public DEV Community article is published
 - Bonus social URL: fill after the public post containing the exact hashtag
   `#AllThingsAgenticHackathon` is published
 
-### Private testing instructions field
+### Private testing instructions field (241 of 255 characters)
 
-Clone the repository and follow README → “Judges: run the whole thing with
-one command.” The
-credential-free path uses disclosed fixtures, the Firestore emulator, recorded
-model responses, and a simulated home. Run `SIMULATED_HOME=1 docker compose
-up`, then open `http://localhost:8080/missioncontrol`. The hosted Mission
-Control URL is public and read-only; no credentials are required. Two
-fresh-clone, no-cache validations on the submission host reached successful
-judge-mode kickoff in 184.487 s and 194.845 s. These are observed
-Windows/WSL/Docker timings, not a cross-machine SLA. The live cloud evidence
-uses run ID `2026-08-31`.
+No credentials required. Open the live read-only Mission Control:
+https://hearthbeat-369944070051.us-central1.run.app/missioncontrol. For local
+judge mode, clone the repo and run: SIMULATED_HOME=1 docker compose up. Full
+steps are in README.
+
+The README documents the disclosed fixtures, Firestore emulator, recorded
+model responses, simulated home, and local Mission Control URL. Two fresh-clone,
+no-cache validations on the submission host reached successful judge-mode
+kickoff in 184.487 s and 194.845 s. These are observed Windows/WSL/Docker
+timings, not a cross-machine SLA. The live cloud evidence uses run ID
+`2026-08-31`.
 
 ## Text description (long form)
 
@@ -232,7 +234,7 @@ bigquery, gemma, ollama, python, fastapi, home-assistant, docker
 ## Links
 - Repo (public): https://github.com/DZim89/hearthbeat
 - Hosted (read-only Mission Control): https://hearthbeat-369944070051.us-central1.run.app/missioncontrol
-- Video (public YouTube, ≤4:00, EN captions): «FILL AFTER UPLOAD»
+- Video (public YouTube, 3:20, EN-US captions): https://youtu.be/tv9DgNzF0Gc
 - Architecture diagram: in repo — docs/architecture.png (+ docs/ARCHITECTURE.md)
 - Gallery thumbnail (3:2): docs/hearthbeat-thumbnail.png
 - dev.to build log (bonus): https://dev.to/dzim89/building-hearthbeat-in-one-night-a-safe-household-agent-with-google-adk-2an8
@@ -256,3 +258,8 @@ implementation, testing, and adversarial review under Donny's direction and
 evidence gates. The first reachable commit is August 30, 2026 at 4:07:10 PM PDT;
 all Hearthbeat application code was authored August 30–31. Pre-existing Home
 Assistant and local model servers are environment/data sources only.
+
+The submitted narration was synthesized with Gemini 3.1 Flash TTS Preview on
+Vertex AI using the Achird voice and contains SynthID. It was used only for
+video production; the filmed Hearthbeat runtime used Gemini 3.5 Flash and
+Flash-Lite.

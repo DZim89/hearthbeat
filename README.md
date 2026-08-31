@@ -13,6 +13,8 @@ Google ADK, Gemini 3.5 on Vertex AI, and Cloud Run / Cloud Scheduler /
 Pub/Sub / Firestore / BigQuery — plus a load-bearing **local Gemma 3** privacy
 tier running inside the house.
 
+**Demo video:** [watch the 3:20 public, English-captioned demo](https://youtu.be/tv9DgNzF0Gc).
+
 ![hearthbeat](docs/hearthbeat-thumbnail.png)
 
 ---
@@ -161,6 +163,9 @@ lifts quiet-hours for that action, because a tap is consent.
   (the ledger + views).
 - **Bonus: local Gemma** — gemma3 via ollama, load-bearing in every
   school-email ingest (see `privacy_tier_v`).
+- **Demo narration only: Gemini 3.1 Flash TTS Preview** — synthesized on Vertex
+  AI with the Achird voice and embedded SynthID. This model produced the video
+  voice-over; it is not part of Hearthbeat's filmed agent runtime.
 
 ## Production setup (the real house)
 
@@ -218,6 +223,10 @@ docs/       architecture, demo runbook, the HA automation
   Hearthbeat application code was authored August 30–31. The pre-existing
   Home Assistant installation and local model servers (ollama/vLLM) are
   environment/data sources, not part of this submission's codebase.
+- **Video narration**: the submitted voice-over was synthesized with
+  `gemini-3.1-flash-tts-preview` on Vertex AI using the Achird voice and contains
+  SynthID. The filmed Hearthbeat runtime used Gemini 3.5 Flash and Flash-Lite;
+  the TTS model was used only in video production.
 - **Test/demo runs** use suffixed run ids (`YYYY-MM-DD-e2eN`) and
   `trigger_source=manual`. For the filmed scheduled run, Scheduler history and
   timing corroborate cron origin.
