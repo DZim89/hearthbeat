@@ -1,10 +1,25 @@
 #!include:.gitignore
 .git
 .gitignore
+.dockerignore
+.gcloudignore
 *.docx
+# Hearthbeat Taskmaster Winning Plan.docx
+Markdown # Hearthbeat Taskmaster Winning Plan.docx
+.env
+.env.*
+house/.env
+config/token_map.local.json
+*.pem
+*-key.json
+credentials*.json
+*.key
 tests/
 docs/
 data/
 .pytest_cache/
+.ruff_cache/
+.cache/
 __pycache__/
 .venv/
+.venv*

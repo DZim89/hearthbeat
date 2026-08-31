@@ -19,14 +19,14 @@ SELECT
   MIN(ts) AS started,
   MAX(ts) AS last_event,
   -- Deterministic provenance across resumed attempts (never ANY_VALUE):
-  ARRAY_AGG(trigger_source IGNORE NULLS ORDER BY ts ASC LIMIT 1)[OFFSET(0)] AS initial_trigger_source,
-  ARRAY_AGG(trigger_source IGNORE NULLS ORDER BY ts DESC LIMIT 1)[OFFSET(0)] AS latest_trigger_source,
+  ARRAY_AGG(trigger_source IGNORE NULLS ORDER BY ts ASC LIMIT 1)[SAFE_OFFSET(0)] AS initial_trigger_source,
+  ARRAY_AGG(trigger_source IGNORE NULLS ORDER BY ts DESC LIMIT 1)[SAFE_OFFSET(0)] AS latest_trigger_source,
   COUNT(DISTINCT trigger_source) > 1 AS mixed_provenance,
   COUNTIF(event_type = 'model_usage') AS model_calls,
   ROUND(SUM(IF(event_type = 'model_usage',
                CAST(JSON_VALUE(data, '$.cost_microcents') AS INT64), 0)) / 1e6, 4) AS cost_cents,
   COUNTIF(event_type = 'policy_denial') AS policy_denials,
-  COUNTIF(event_type = 'action_dispatched') AS actions_dispatched,
+  COUNT(DISTINCT IF(event_type = 'action_dispatched', JSON_VALUE(data, '$.action_id'), NULL)) AS actions_dispatched,
   COUNTIF(event_type = 'action_executed') AS actions_executed
 FROM `new-prompt-490003.agent_logs.events_v`
 GROUP BY run_id;
@@ -41,7 +41,7 @@ FROM `new-prompt-490003.agent_logs.events_v`
 WHERE event_type = 'policy_denial'
 ORDER BY ts DESC;
 
--- THE zero-private-egress proof (expected result: 0 rows, always):
+-- Zero protected-alias matches in the filmed run; historical blocked rows are separately labeled:
 -- every outbound model call is scanned against salted hashes of the family's
 -- protected names; this view holds any call that matched or was blocked.
 CREATE OR REPLACE VIEW `new-prompt-490003.agent_logs.egress_violations_v` AS

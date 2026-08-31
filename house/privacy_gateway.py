@@ -138,10 +138,26 @@ def _detect_via_qwen(text: str) -> list[str]:
 def _detect_fixture(_text: str) -> list[str]:
     path = config.REPO_ROOT / "fixtures" / "pii_findings.fixture.json"
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return [s["text"] for s in data.get("spans", [])]
-    except Exception:  # noqa: BLE001
-        return []
+        content = path.read_text(encoding="utf-8")
+        data = json.loads(content)
+    except Exception as e:
+        raise SpanParseError(f"failed to read/parse fixture JSON: {e}") from e
+
+    if not isinstance(data, dict):
+        raise SpanParseError("fixture JSON root is not an object")
+    if "spans" not in data:
+        raise SpanParseError("fixture JSON missing 'spans' key")
+    spans = data["spans"]
+    if not isinstance(spans, list):
+        raise SpanParseError("fixture 'spans' is not a list")
+
+    out: list[str] = []
+    for i, item in enumerate(spans):
+        if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
+            out.append(item["text"])
+        else:
+            raise SpanParseError(f"malformed fixture span entry at index {i}")
+    return out
 
 
 def detect_pii(text: str) -> tuple[list[str], str]:

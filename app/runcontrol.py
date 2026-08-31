@@ -89,6 +89,7 @@ def claim_run(run_id: str, trigger_source: str, triggered_by: str) -> dict[str, 
             {
                 "status": "running",
                 "error": firestore.DELETE_FIELD,  # clear stale terminal state
+                "finished_at": firestore.DELETE_FIELD,
                 "attempt": firestore.Increment(1),
                 # initial trigger_source/triggered_by stay UNTOUCHED;
                 # the resume records its own provenance:

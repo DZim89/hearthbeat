@@ -113,6 +113,8 @@ async def test_scheduled_then_manual_resume_records_mixed_provenance(monkeypatch
     rid = "judge-prov"
     first = runcontrol.claim_run(rid, "scheduled", "sa-home@example.iam")
     assert first["claimed"]
+    # Seed a finished_at to simulate a previous terminal attempt state
+    db().collection("runs").document(rid).update({"finished_at": firestore.SERVER_TIMESTAMP, "error": "prior error"})
     monkeypatch.setattr(runcontrol, "HEARTBEAT_STALE_SECONDS", 0)
     import time as _t
     _t.sleep(1.5)  # let the heartbeat age past the (zeroed) staleness window
@@ -127,6 +129,7 @@ async def test_scheduled_then_manual_resume_records_mixed_provenance(monkeypatch
     assert doc["attempt"] == 2
     assert [a["source"] for a in doc["attempt_history"]] == ["scheduled", "manual"]
     assert "error" not in doc                             # stale error cleared
+    assert "finished_at" not in doc                      # stale finished_at cleared
 
     from app.server import _provenance_badge
     label, cls, _ = _provenance_badge(doc)
@@ -137,9 +140,10 @@ async def test_scheduled_then_manual_resume_records_mixed_provenance(monkeypatch
 async def test_sensitive_action_slip_repaired_on_retry():
     """Fault injection: action doc exists (awaiting_approval, sensitive) but
     its slip is missing — a dispatch retry ensures exactly one slip and no
-    duplicate action; a further retry stays exactly one/one."""
+    duplicate action; retries do not inflate action_dispatched evidence."""
     from types import SimpleNamespace
 
+    from app import ledger
     from app.dispatcher import Dispatcher, _action_id
     from app.stores import ACTIONS, SLIPS, db
     from google.cloud import firestore
@@ -157,6 +161,14 @@ async def test_sensitive_action_slip_repaired_on_retry():
     })
     assert not db().collection(SLIPS).document(aid).get().exists  # injected fault
 
+    emitted_events = []
+    class _MockActive:
+        def emit_public(self, event_type, **kwargs):
+            emitted_events.append((event_type, kwargs))
+
+    monkeypatch_active = _MockActive()
+    ledger.ACTIVE[rid] = monkeypatch_active
+
     async def _dispatch_once():
         ctx = SimpleNamespace(session=SimpleNamespace(state={
             "run_id": rid,
@@ -165,12 +177,27 @@ async def test_sensitive_action_slip_repaired_on_retry():
         async for _ in Dispatcher(name="hearth_dispatcher")._run_async_impl(ctx):
             pass
 
-    for _ in range(2):  # repair retry, then idempotency retry
+    try:
+        # First retry: repairs missing slip
         await _dispatch_once()
         acts = list(db().collection(ACTIONS).where("run_id", "==", rid).get())
         slips = list(db().collection(SLIPS).where("run_id", "==", rid).get())
         assert [d.id for d in acts] == [aid]
         assert [d.id for d in slips] == [aid]
+        assert emitted_events[-1][0] == "permission_slip_repaired"
+
+        # Second retry: fully reused, no repair needed
+        await _dispatch_once()
+        acts = list(db().collection(ACTIONS).where("run_id", "==", rid).get())
+        slips = list(db().collection(SLIPS).where("run_id", "==", rid).get())
+        assert [d.id for d in acts] == [aid]
+        assert [d.id for d in slips] == [aid]
+        assert emitted_events[-1][0] == "action_reused"
+
+        # Verify action_dispatched was NEVER emitted on retries (no ledger inflation)
+        assert not any(ev[0] == "action_dispatched" for ev in emitted_events)
+    finally:
+        ledger.ACTIVE.pop(rid, None)
 
 
 @pytest.mark.asyncio

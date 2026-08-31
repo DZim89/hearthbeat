@@ -34,22 +34,20 @@ messages the recipient directly).
 cron, a read-only Mission Control page, a briefing that lands on a phone, and
 things quietly happening in a real house with three kids in it.
 
-**Privacy as architecture, not policy.** Real names exist only inside the
-house. A deterministic token map runs before AND after a local **Gemma 3**
-pass (ollama, on our own GPU box): the map catches the family, Gemma catches
-strangers' PII the map can't know — a teacher's name and phone in a school
-email — and a hard `assert_clean` gate fails the pipeline if either missed.
-In the cloud, every outbound Vertex request is scanned against **salted
-hashes** of the protected names; a match blocks the model call. BigQuery's
+**Privacy as architecture, not policy.** Known family aliases are
+deterministically tokenized on the intended runtime path before AND after a local **Gemma 3**
+pass (ollama, on our own GPU box): the map tokenizes the family, a local Gemma/Qwen tier scans
+for additional PII the map can't know — a teacher's name and phone in a school
+email. In the cloud, every instrumented outbound Gemini request is checked against the
+**configured protected-alias hash set**; a match blocks the model call. BigQuery's
 verdict for the filmed run: zero protected-alias matches — the only rows the
 violations view has ever held are the guard blocking our own build mistakes,
 kept and shown separately. (During the build this
 guard caught a genuinely misconfigured mirror and refused to talk to Gemini —
 we kept the story in the README.)
 
-**Run integrity.** `POST /run` is the only application code path that
-assigns `trigger_source=scheduled`, after validating the caller's OIDC
-identity against the configured Scheduler service account. Filming and judge runs are labeled `manual`,
+**Run integrity.** `POST /run` authenticates the configured invoker principal
+via OIDC; Scheduler history/timing corroborate cron origin. Filming and judge runs are labeled `manual`,
 structurally. Runs are date-keyed with Firestore `create()` preconditions,
 stage-checkpointed, and resumable: under the retry paths we tested (kill
 mid-run, re-fire), it finishes without duplicating a single action.
@@ -59,7 +57,7 @@ custom BaseAgents / BasePlugin / structured outputs),
 Gemini 3.5 Flash + Flash-Lite on Vertex AI (location=global), Cloud Run,
 Cloud Scheduler (OIDC), Pub/Sub + DLQ with a native BigQuery subscription,
 Firestore, BigQuery, and local Gemma 3 as a load-bearing privacy tier.
-Each run's cost is a run-scoped list-rate estimate from the configured
+Each run's cost is an estimated list-rate model cost for this run from the configured
 official per-token rates, recorded in BigQuery (`runs_v.cost_cents`) and on
 Mission Control; a configured observed-spend threshold causes the policy
 layer and dispatcher to deny the action plan (not a hard billing cap).

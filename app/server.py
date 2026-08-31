@@ -1,7 +1,8 @@
 """Cloud Run service surface.
 
-  POST /run            — Cloud Scheduler ONLY (OIDC verified in-app). The single
-                         code path that may label a run trigger_source=scheduled.
+  POST /run            — Cloud Scheduler (OIDC verified in-app). Authenticates
+                         the configured invoker principal via OIDC; Scheduler
+                         history/timing corroborate cron origin.
   POST /trigger        — manual/filming/judge entrypoint; labeled manual, and a
                          manual RESUME of a scheduled run renders as mixed provenance.
   GET  /missioncontrol — public read-only dashboard (token-space data only).
@@ -142,9 +143,26 @@ pre{background:#1c1f27;border:1px solid #2a2e39;border-radius:8px;padding:1rem;w
 
 def _provenance_badge(data: dict) -> tuple[str, str, str]:
     """(badge_label, badge_css_class, by_line). A run only renders the green
-    scheduled badge when BOTH its immutable initial source AND its current
-    attempt are scheduled — a manually resumed scheduled run renders as mixed
-    provenance, never as scheduled-only."""
+    scheduled badge when all attempts are scheduled — any mixed history (such as
+    scheduled -> manual -> scheduled) renders as mixed provenance with a non-green class."""
+    history = data.get("attempt_history")
+    if isinstance(history, list) and history:
+        sources = [str(h.get("source", "—")) for h in history if isinstance(h, dict)]
+        principals = [str(h.get("principal", "—")) for h in history if isinstance(h, dict)]
+        attempt = data.get("attempt", len(history))
+        if len(set(sources)) > 1:
+            if len(sources) == 2:
+                label = f"{sources[0]} initial → {sources[1]} resume (attempt {attempt})"
+            else:
+                label = f"{' → '.join(sources)} (attempt {attempt})"
+            by_line = " → ".join(principals)
+            return label, "manual", by_line
+        current = sources[-1] if sources else str(data.get("trigger_source", "—"))
+        cls = "scheduled" if current == "scheduled" else "manual"
+        by_line = principals[0] if principals else str(data.get("triggered_by", "—"))
+        return current, cls, by_line
+
+    # Legacy fallback when attempt_history is missing:
     initial = str(data.get("trigger_source", "—"))
     current = str(data.get("current_trigger_source") or initial)
     by_initial = str(data.get("triggered_by", "—"))
@@ -251,7 +269,7 @@ async def missioncontrol(run: str | None = Query(default=None)) -> str:
 <h2>Privacy &amp; spend</h2>
 <p class=kv>egress guard: <b>{e(str(egress.get('checks', 0)))}</b> outbound model calls scanned,
 <b class={'deny' if egress.get('matches') else 'ok'}>{e(str(egress.get('matches', 0)))}</b> protected-alias matches
-· model spend this run: <b>{cost_cents}¢</b></p>
+· estimated list-rate model cost for this run: <b>{cost_cents}¢</b></p>
 <p class=muted>hearthbeat — an autonomous household agent. No chat UI: it plans, a policy
 critic argues with it, a human approves anything personal, and the house pulls
 its actions — the cloud can't reach in.</p>

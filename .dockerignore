@@ -1,7 +1,35 @@
 
-# hearthbeat: never in any build/source context
+# hearthbeat: build context exclusions
+.git
+.gitignore
+.dockerignore
+.gcloudignore
 *.docx
-config/token_map.local.json
+# Hearthbeat Taskmaster Winning Plan.docx
+Markdown # Hearthbeat Taskmaster Winning Plan.docx
+
+# Environments & credentials
+.env
+.env.*
 house/.env
-data/
+config/token_map.local.json
+*.pem
+*-key.json
+credentials*.json
+*.key
+
+# Virtualenvs & caches
+.venv
+.venv*
+env/
+venv/
+__pycache__/
+*.py[cod]
 .pytest_cache/
+.ruff_cache/
+.cache/
+
+# Data, docs, tests
+data/
+docs/
+tests/

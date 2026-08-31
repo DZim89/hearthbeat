@@ -85,3 +85,38 @@ def test_both_invalid_blocks_ingest_write(monkeypatch, tmp_path):
         email_ingest.ingest_file(eml)
     assert recorder.writes == 0          # nothing reached Firestore
     assert eml.exists()                  # file retained for retry — not moved
+
+
+# ---- _detect_fixture fail-closed -------------------------------------------
+
+def test_detect_fixture_valid_returns_spans():
+    spans = pg._detect_fixture("dummy text")
+    assert len(spans) > 0
+    assert "Mrs. Alvarez" in spans
+
+
+def test_detect_fixture_explicit_empty_list(monkeypatch, tmp_path):
+    fake_fixtures = tmp_path / "fixtures"
+    fake_fixtures.mkdir()
+    (fake_fixtures / "pii_findings.fixture.json").write_text('{"spans": []}', encoding="utf-8")
+    monkeypatch.setattr(pg.config, "REPO_ROOT", tmp_path)
+    assert pg._detect_fixture("dummy text") == []
+
+
+@pytest.mark.parametrize("payload,label", [
+    ("not json at all", "corrupt json"),
+    ("[]", "root is list"),
+    ('{"no_spans_key": []}', "missing spans"),
+    ('{"spans": "not a list"}', "non-list spans"),
+    ('{"spans": [{"kind": "name"}]}', "missing text"),
+    ('{"spans": [{"text": ""}]}', "empty text"),
+    ('{"spans": [{"text": 123}]}', "non-string text"),
+    ('{"spans": ["just string"]}', "non-dict span"),
+])
+def test_detect_fixture_invalid_raises_span_parse_error(monkeypatch, tmp_path, payload, label):
+    fake_fixtures = tmp_path / "fixtures"
+    fake_fixtures.mkdir(exist_ok=True)
+    (fake_fixtures / "pii_findings.fixture.json").write_text(payload, encoding="utf-8")
+    monkeypatch.setattr(pg.config, "REPO_ROOT", tmp_path)
+    with pytest.raises(pg.SpanParseError):
+        pg._detect_fixture("dummy text")

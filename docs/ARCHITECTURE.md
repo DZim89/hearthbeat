@@ -36,7 +36,7 @@ flowchart LR
             GUARD[["LedgerPlugin<br/>egress guard (salted hashes)<br/>cost meter · lifecycle events"]]
         end
         FS[(Firestore<br/>runs · checkpoints<br/>pending_actions<br/>permission_slips<br/>homes/main)]
-        PS[Pub/Sub agent-events] --> BQ[(BigQuery agent_logs<br/>cost · denials ·<br/>zero-egress proof)]
+        PS[Pub/Sub agent-events] --> BQ[(BigQuery agent_logs<br/>cost · denials ·<br/>run-scoped protected-alias checks)]
         PS -.-> DLQ[DLQ + pull sub]
         SCHED -->|OIDC POST /run| SRV
         SRV --> ADK
@@ -46,7 +46,7 @@ flowchart LR
         ADK <--> VERTEX
     end
 
-    SCRUB -->|"tokens only ⬆"| FS
+    SCRUB -->|"tokenized mirror data ⬆"| FS
     FS -->|"house PULLS pending_actions"| POLLER
     style HOUSE fill:#e9f5ec,stroke:#4a7c59,stroke-width:2px
     style GCP fill:#e8f0fb,stroke:#4a6a8c,stroke-width:2px
@@ -70,13 +70,13 @@ BigQuery — we film that.
 **3. Privacy by layered scrubbing.** Known family aliases are deterministically
 tokenized on the intended runtime path — the map is applied before AND after a
 local Gemma pass (`deep_scrub`, direct local HTTP, fail-closed parsing): the
-map handles what it knows, Gemma scans for additional PII (a teacher's name in
-a school email), and `assert_clean` hard-fails if either missed. Cloud-side,
+map handles what it knows, a local Gemma/Qwen tier scans for additional PII (a teacher's name in
+a school email), and `assert_clean` hard-fails on any survivor on the intended path. Cloud-side,
 every instrumented outbound Gemini request is checked against the **configured
 protected-alias hash set** — a match blocks the call. BigQuery view
 `egress_violations_v` shows zero protected-alias matches for the filmed run
 (its only historical rows are the guard blocking our own build mistakes —
-kept deliberately).
+kept separately).
 
 **4. Pull, never push.** The house exposes no webhook, no tunnel, no inbound
 socket. Actions flow: Dispatcher → Firestore `pending_actions` → poller claims
@@ -85,18 +85,17 @@ by transaction → rehydrates tokens locally → executes in HA. Sensitive actio
 an HA companion-app notification (or the console standby). Human approval is
 consent — it also lifts quiet-hours for that action.
 
-**5. A manual run is labeled, structurally.** `POST /run` is the only
-application code path that assigns `trigger_source=scheduled`, after
-validating the caller's OIDC identity against the configured Scheduler
-service account. `/trigger` hard-codes
+**5. A manual run is labeled, structurally.** `POST /run` authenticates
+the configured invoker principal via OIDC; Scheduler history/timing corroborate
+cron origin. `/trigger` hard-codes
 `manual`. The badge on Mission Control, the run doc, and every ledger row
 carry it. Judge mode fires `/trigger` — and says so.
 
 ## Durability
 
 `runs/{YYYY-MM-DD}` is claimed with a Firestore `create()` precondition —
-re-fired crons no-op (done), 409 (fresh heartbeat), or transactionally take
-over (stale). Each of the four stages checkpoints its state slice; a resumed
+re-fired crons no-op (done), 409 (fresh heartbeat), or take over on stale
+heartbeat. Each of the four stages checkpoints its state slice; a resumed
 run rebuilds the ADK tree from only the unfinished stages and seeds session
 state from the checkpoints. Action docs are content-hashed and `create()`d:
 re-dispatch is idempotent under the tested retry paths (mid-run kill + re-fire).

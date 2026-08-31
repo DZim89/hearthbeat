@@ -87,20 +87,20 @@ SequentialAgent
 Observability is one ADK **plugin** (`app/ledger.py`): every lifecycle hook
 emits to Pub/Sub `agent-events` → a **native BigQuery subscription** (with a
 DLQ) → `agent_logs` views for cost-per-run in cents, policy denials, and the
-zero-egress proof (cloud-run rows; house-side events carry their own
+run-scoped protected-alias checks (cloud-run rows; house-side events carry their own
 source and run id). The same hook is the **egress guard** (below).
 
 ## The privacy architecture
 
-The intended runtime path keeps real names inside the house — the map
-catches what it knows, Gemma catches what it can't, and the cloud guard
-detects aliases covered by the configured hash set. Three layers:
+Known family aliases are deterministically tokenized on the intended runtime path.
+A local Gemma/Qwen tier scans for additional PII, and every instrumented outbound Gemini
+request is checked against the configured protected-alias hash set. Three layers:
 
 | Layer | Where | What it does |
 |---|---|---|
-| Deterministic token map | house | `Riley → [[P_KID1]]`, applied **before and after** the model pass; `assert_clean` hard-fails on any survivor. The real map is gitignored — this repo ships a fixture family. |
-| **Local Gemma 3** (ollama) | house | Catches PII the family map cannot know — a teacher's name and phone number in a school email. Falls back to a local qwen server (`PRIVACY_TIER=qwen`) and the ledger records which tier did each pass. |
-| Salted-hash egress guard | cloud | `before_model_callback` scans every outbound Vertex request against salted SHA-256 hashes of the protected names — the cloud can detect a leak **without ever holding a name in plaintext**. A match blocks the model call and fails the run. |
+| Deterministic token map | house | `Riley → [[P_KID1]]`, applied **before and after** the model pass; `assert_clean` hard-fails on any survivor on the intended runtime path. The real map is gitignored — this repo ships a fixture family. |
+| **Local Gemma 3** (ollama) | house | Scans for additional PII the family map cannot know — a teacher's name and phone number in a school email. Falls back to a local qwen server (`PRIVACY_TIER=qwen`) and the ledger records which tier did each pass. |
+| Salted-hash egress guard | cloud | `before_model_callback` scans every instrumented outbound Vertex request against salted SHA-256 hashes of the configured protected names — the guard stores and compares salted alias hashes. A match blocks the model call and fails the run. |
 
 Standing proof in BigQuery:
 

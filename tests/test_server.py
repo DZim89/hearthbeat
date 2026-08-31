@@ -74,3 +74,36 @@ def test_manual_only_run_renders_manual():
     label, cls, _ = _provenance_badge(
         {"trigger_source": "manual", "triggered_by": "op"})
     assert (label, cls) == ("manual", "manual")
+
+
+def test_scheduled_manual_scheduled_renders_mixed_chain():
+    from app.server import _provenance_badge
+    doc = {
+        "trigger_source": "scheduled", "triggered_by": "sa@x", "attempt": 3,
+        "current_trigger_source": "scheduled", "current_triggered_by": "sa@x",
+        "attempt_history": [
+            {"attempt": 1, "source": "scheduled", "principal": "sa@x"},
+            {"attempt": 2, "source": "manual", "principal": "operator"},
+            {"attempt": 3, "source": "scheduled", "principal": "sa@x"},
+        ]
+    }
+    label, cls, by = _provenance_badge(doc)
+    assert label == "scheduled → manual → scheduled (attempt 3)"
+    assert cls == "manual"  # mixed provenance MUST NOT be green scheduled
+    assert by == "sa@x → operator → sa@x"
+
+
+def test_pure_scheduled_with_history_renders_green():
+    from app.server import _provenance_badge
+    doc = {
+        "trigger_source": "scheduled", "triggered_by": "sa@x", "attempt": 2,
+        "current_trigger_source": "scheduled", "current_triggered_by": "sa@x",
+        "attempt_history": [
+            {"attempt": 1, "source": "scheduled", "principal": "sa@x"},
+            {"attempt": 2, "source": "scheduled", "principal": "sa@x"},
+        ]
+    }
+    label, cls, by = _provenance_badge(doc)
+    assert label == "scheduled"
+    assert cls == "scheduled"
+    assert by == "sa@x"

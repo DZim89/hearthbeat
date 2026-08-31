@@ -8,8 +8,9 @@
 # create() preconditions, the pull-based action path are all real code), the
 # agent service (same image Cloud Run runs), a fake Home Assistant seeded from
 # fixtures, the three house-side processes, and a kickoff that fires the
-# pipeline via /trigger (honestly labeled trigger_source=manual — only Cloud
-# Scheduler's OIDC identity can ever produce "scheduled").
+# pipeline via /trigger (honestly labeled trigger_source=manual — POST /run
+# authenticates the configured invoker principal via OIDC; Scheduler
+# history/timing corroborate cron origin).
 
 services:
   firestore:

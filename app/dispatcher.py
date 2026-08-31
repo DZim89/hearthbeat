@@ -109,12 +109,15 @@ class Dispatcher(BaseAgent):
                 "created_at": firestore.SERVER_TIMESTAMP,
                 "attempts": 0,
             }
+            created_action = False
             try:
                 db().collection(ACTIONS).document(aid).create(doc)
+                created_action = True
             except gexc.AlreadyExists:
                 pass  # resume path: the action doc survives — fall through so
                       # the slip is STILL ensured (a crash between the two
                       # creates must not strand a sensitive action slip-less)
+            created_slip = False
             if sensitive:
                 try:
                     db().collection(SLIPS).document(aid).create(
@@ -129,17 +132,35 @@ class Dispatcher(BaseAgent):
                             "created_at": firestore.SERVER_TIMESTAMP,
                         }
                     )
+                    created_slip = True
                 except gexc.AlreadyExists:
                     pass
             dispatched.append(aid)
             if active:
-                active.emit_public(
-                    "action_dispatched",
-                    action_id=aid,
-                    action_type=str(action.get("action_type")),
-                    sensitive=sensitive,
-                    status=doc["status"],
-                )
+                if created_action:
+                    active.emit_public(
+                        "action_dispatched",
+                        action_id=aid,
+                        action_type=str(action.get("action_type")),
+                        sensitive=sensitive,
+                        status=doc["status"],
+                    )
+                elif sensitive and created_slip:
+                    active.emit_public(
+                        "permission_slip_repaired",
+                        action_id=aid,
+                        action_type=str(action.get("action_type")),
+                        sensitive=sensitive,
+                        status=doc["status"],
+                    )
+                else:
+                    active.emit_public(
+                        "action_reused",
+                        action_id=aid,
+                        action_type=str(action.get("action_type")),
+                        sensitive=sensitive,
+                        status=doc["status"],
+                    )
 
         try:
             from app import runcontrol

@@ -1,4 +1,4 @@
-# Building hearthbeat in one night: an ADK agent that runs my house's morning (and can prove it never leaked a name)
+# Building hearthbeat in one night: an ADK agent that runs my house's morning (and audits every outbound call for protected aliases)
 
 *Build log for the All Things Agentic Hackathon. Category: The Taskmaster.*
 
@@ -47,16 +47,16 @@ Assistant. Default-deny, enforced three times, all from one YAML file.
 ## Privacy that doesn't depend on a model behaving
 
 House-side, every piece of free text goes through `deep_scrub`: deterministic
-token map → **local Gemma 3 via ollama** (it catches the PII the family map
-can't know — the teacher's name and phone in a school email) → token map again
-→ `assert_clean` hard-fail. My 4080 is so VRAM-contended by other local
+token map → **local Gemma 3 via ollama** (a local Gemma/Qwen tier scans for
+additional PII the family map can't know — the teacher's name and phone in a school email)
+→ token map again → scrub validation. My 4080 is so VRAM-contended by other local
 models that gemma runs mostly on CPU at ~12 tok/s — fine for short scans, and
 the ledger records which tier did each pass (`PRIVACY_TIER=qwen` is the
 fallback).
 
-Cloud-side, an ADK `BasePlugin`'s `before_model_callback` scans every outbound
-Vertex request against **salted hashes** of the protected names. The cloud
-can detect a leak without ever holding a name.
+Cloud-side, an ADK `BasePlugin`'s `before_model_callback` scans every instrumented outbound
+Vertex request against **salted hashes** of the protected names. The guard
+stores and compares salted alias hashes.
 
 Three real bugs this architecture caught *during the build*:
 
@@ -75,11 +75,10 @@ Three real bugs this architecture caught *during the build*:
 
 ## Run integrity as a feature
 
-`trigger_source=scheduled` is writable from exactly one code path: `POST
-/run`, which verifies the caller's OIDC identity is the Cloud Scheduler
-service account. The filming/judge endpoint hard-codes `manual`. When you see
-"scheduled" in the demo video, it's because a real cron fired — the system
-won't let me fake it, which is the point.
+`POST /run` authenticates the configured invoker principal via OIDC; for the
+filmed run, Scheduler history and fire-time logs corroborate cron origin.
+The filming/judge endpoint hard-codes `manual`. When you see "scheduled" in the
+filmed demo, it is corroborated by Scheduler history.
 
 Also: GFE quietly intercepts the literal path `/healthz` on `*.run.app` and
 serves a Google 404 that never reaches your container. Renamed to `/health`.
