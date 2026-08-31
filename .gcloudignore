@@ -1,0 +1,10 @@
+#!include:.gitignore
+.git
+.gitignore
+*.docx
+tests/
+docs/
+data/
+.pytest_cache/
+__pycache__/
+.venv/

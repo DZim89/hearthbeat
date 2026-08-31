@@ -18,7 +18,10 @@ SELECT
   run_id,
   MIN(ts) AS started,
   MAX(ts) AS last_event,
-  ANY_VALUE(trigger_source) AS trigger_source,
+  -- Deterministic provenance across resumed attempts (never ANY_VALUE):
+  ARRAY_AGG(trigger_source IGNORE NULLS ORDER BY ts ASC LIMIT 1)[OFFSET(0)] AS initial_trigger_source,
+  ARRAY_AGG(trigger_source IGNORE NULLS ORDER BY ts DESC LIMIT 1)[OFFSET(0)] AS latest_trigger_source,
+  COUNT(DISTINCT trigger_source) > 1 AS mixed_provenance,
   COUNTIF(event_type = 'model_usage') AS model_calls,
   ROUND(SUM(IF(event_type = 'model_usage',
                CAST(JSON_VALUE(data, '$.cost_microcents') AS INT64), 0)) / 1e6, 4) AS cost_cents,

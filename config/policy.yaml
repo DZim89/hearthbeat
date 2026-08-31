@@ -1,7 +1,7 @@
 # hearthbeat action policy — the deterministic authority on what the agent may do.
 # Default-deny: anything not listed here is refused and lands as a denial row
-# in the ledger. Entities and person references are in TOKEN SPACE — the cloud
-# never sees real names or real entity ids (see house/scrub.py).
+# in the ledger. Entities and person references are in TOKEN SPACE — known
+# family aliases and mapped entity ids are tokenized house-side (house/scrub.py).
 
 version: 1
 timezone: America/Los_Angeles
@@ -11,7 +11,8 @@ timezone: America/Los_Angeles
 quiet_hours: { start: "21:30", end: "06:30" }
 human_approval_bypasses_quiet_hours: true
 
-daily_budget_cents: 50        # hard ceiling on model spend per day; enforced mid-run
+daily_budget_cents: 50        # observed-spend threshold: past this the policy
+                              # layer denies further action plans (NOT a billing cap)
 max_actions_per_run: 6
 
 actions:

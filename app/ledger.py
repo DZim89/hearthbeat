@@ -8,10 +8,10 @@ egress_check, policy_denial, action_dispatched, run_completed, …):
   judge mode : JSONL file on the compose volume — the emission code is
                byte-identical, only the sink differs.
 
-The before_model hook is also the cloud-side EGRESS GUARD: it scans every
-outbound model request against salted hashes of the family's real names
-(EGRESS_ALIAS_HASHES). The cloud can prove nothing private is leaving without
-ever holding a real name in plaintext. A match hard-fails the run.
+The before_model hook is also the cloud-side EGRESS GUARD: every instrumented
+outbound model request is checked against the configured protected-alias hash
+set (EGRESS_ALIAS_HASHES) — the cloud detects configured-alias leaks without
+holding a plaintext name. A match hard-fails the run.
 """
 
 from __future__ import annotations
@@ -69,11 +69,13 @@ def validate_egress_config(environ=None) -> list[str]:
     """
     env = environ if environ is not None else os.environ
     simulated = env.get("SIMULATED_HOME") == "1"
-    judge_live = simulated and env.get("JUDGE_LLM", "fixture") == "live"
-    # Strict (guard REQUIRED): Cloud Run production, and judge-live mode
-    # (real requests leave the machine there too). Guardless is allowed only
-    # for fixture-only judge mode and bare local development.
-    strict = (bool(env.get("K_SERVICE")) and not simulated) or judge_live
+    judge_live = env.get("JUDGE_LLM", "fixture") == "live"
+    # Guardless is allowed ONLY for demonstrably offline local fixture replay:
+    # no Cloud Run, simulated home, fixture LLM. EVERY mode capable of issuing
+    # a real model request — bare local dev, local judge-live, and Cloud Run
+    # regardless of SIMULATED_HOME — requires complete validated guard config.
+    offline_fixture = (not env.get("K_SERVICE")) and simulated and not judge_live
+    strict = not offline_fixture
     salt = (env.get("EGRESS_SALT") or "").strip()
     hashes = _csv(env, "EGRESS_ALIAS_HASHES")
     tokens = _csv(env, "EGRESS_KNOWN_TOKENS")
@@ -81,7 +83,7 @@ def validate_egress_config(environ=None) -> list[str]:
     supplied = bool(salt or hashes or tokens)
     if not supplied:
         return (
-            ["EGRESS_SALT/EGRESS_ALIAS_HASHES/EGRESS_KNOWN_TOKENS missing (all three required in production)"]
+            ["EGRESS_SALT/EGRESS_ALIAS_HASHES/EGRESS_KNOWN_TOKENS missing (all three required in any mode that can issue real model requests)"]
             if strict
             else []
         )

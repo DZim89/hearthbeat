@@ -6,15 +6,20 @@ titles) leaves the house:
     deterministic map PRE-pass  ->  local Gemma PII detection  ->  span redact
     ->  deterministic map POST-pass  ->  assert_clean  ->  Firestore
 
-The Gemma detector is a real ADK agent (LiteLlm -> ollama), and it is invoked
-DETERMINISTICALLY through a local Runner — an AgentTool would leave the choice
-to a model, which is not a guarantee. AgentTool export is still provided for
-legitimately model-initiated scrubbing.
+THE ENFORCEMENT PATH IS DIRECT LOCAL HTTP: deep_scrub calls the Gemma
+(ollama) or Qwen (OpenAI-compatible) endpoint itself, deterministically —
+no model ever decides whether scrubbing happens. An ADK agent/AgentTool
+factory is also exported below as an OPTIONAL integration surface for
+model-initiated scrubbing; it is not the enforcement path.
 
-Gemma catches what the map cannot know: a teacher's name, a phone number in a
-school email. The map catches what Gemma might miss: the family itself. If
-Gemma is unreachable/slow, PRIVACY_TIER falls back to local qwen (:8000) and
-the ledger records which tier did the pass — the demo stays honest.
+Gemma scans for PII the map cannot know: a teacher's name, a phone number in
+a school email. The map deterministically tokenizes the KNOWN family aliases.
+FAIL-CLOSED PARSING: a detector response that is prose, malformed/truncated
+JSON, a non-list, or contains unusable entries raises SpanParseError — it is
+never treated as "no PII found". Gemma-invalid triggers ONE Qwen fallback;
+if Qwen's output is also invalid, deep_scrub raises and the caller must
+retain the item for retry — nothing is written outbound. The ledger records
+which tier did each pass — the demo stays honest.
 """
 
 from __future__ import annotations
@@ -45,21 +50,51 @@ class ScrubResult:
     tier: str
 
 
+class SpanParseError(RuntimeError):
+    """Detector output could not be parsed into a findings list. NEVER
+    equivalent to 'no PII found' — the caller must fall back or fail."""
+
+
 def _parse_spans(raw: str) -> list[str]:
-    """Tolerant parse — a 4B model sometimes wraps JSON in prose/fences."""
-    m = re.search(r"\[.*\]", raw, re.DOTALL)
-    if not m:
-        return []
-    try:
-        arr = json.loads(m.group(0))
+    """FAIL-CLOSED parse. A 4B model may wrap JSON in prose/fences — that is
+    tolerated — but an output with no JSON array, invalid/truncated JSON, a
+    non-list top level, or unusable entries RAISES. A valid explicit [] is the
+    only way to assert 'nothing found'."""
+    if not isinstance(raw, str) or not raw.strip():
+        raise SpanParseError("empty detector response")
+    stripped = re.sub(r"^```(?:json)?|```$", "", raw.strip(), flags=re.MULTILINE).strip()
+    try:  # whole response is JSON: authoritative — a top-level object/scalar fails
+        whole = json.loads(stripped)
+        if not isinstance(whole, list):
+            raise SpanParseError("detector JSON top level is not a list")
+        arr = whole
     except json.JSONDecodeError:
-        return []
-    out = []
-    for item in arr:
-        if isinstance(item, dict) and item.get("text"):
-            out.append(str(item["text"]))
-        elif isinstance(item, str):
+        # Prose-wrapped output: only a top-level ARRAY may be extracted. If the
+        # first structural character is '{', the model answered with an object —
+        # never mine an inner array out of it.
+        first_bracket = stripped.find("[")
+        first_brace = stripped.find("{")
+        if first_bracket == -1:
+            raise SpanParseError("no JSON array in detector response") from None
+        if first_brace != -1 and first_brace < first_bracket:
+            raise SpanParseError("detector JSON top level is not a list") from None
+        m = re.search(r"\[.*\]", stripped, re.DOTALL)
+        if not m:
+            raise SpanParseError("no JSON array in detector response") from None
+        try:
+            arr = json.loads(m.group(0))
+        except json.JSONDecodeError as e:
+            raise SpanParseError(f"invalid JSON in detector response: {e.msg}") from e
+        if not isinstance(arr, list):
+            raise SpanParseError("detector JSON is not a list")
+    out: list[str] = []
+    for i, item in enumerate(arr):
+        if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
+            out.append(item["text"])
+        elif isinstance(item, str) and item.strip():
             out.append(item)
+        else:
+            raise SpanParseError(f"malformed detector entry at index {i}")
     return out
 
 
@@ -107,14 +142,16 @@ def _detect_fixture(_text: str) -> list[str]:
 
 
 def detect_pii(text: str) -> tuple[list[str], str]:
-    """Returns (spans, tier_used)."""
+    """Returns (spans, tier_used). FAIL-CLOSED: an unreachable detector or
+    unparseable output triggers exactly one fallback to the other local tier;
+    if that is also unusable, this RAISES — callers must not write the item."""
     if config.SIMULATED:
         return _detect_fixture(text), "fixture"
     if config.PRIVACY_TIER == "gemma":
         try:
             return _detect_via_ollama(text), "gemma"
-        except Exception as e:  # noqa: BLE001
-            print(f"[privacy_gateway] gemma unavailable ({e}); falling back to qwen")
+        except Exception as e:  # noqa: BLE001 — one fallback, then fail closed
+            print(f"[privacy_gateway] gemma unusable ({e}); one qwen fallback")
     return _detect_via_qwen(text), "qwen"
 
 

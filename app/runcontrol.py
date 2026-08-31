@@ -54,9 +54,18 @@ def claim_run(run_id: str, trigger_source: str, triggered_by: str) -> dict[str, 
         ref.create(
             {
                 "status": "running",
+                # IMMUTABLE initial provenance — never overwritten by a resume:
                 "trigger_source": trigger_source,
                 "triggered_by": triggered_by,
+                # Current-attempt provenance — updated on every takeover:
+                "current_trigger_source": trigger_source,
+                "current_triggered_by": triggered_by,
+                "current_attempt_started_at": firestore.SERVER_TIMESTAMP,
                 "attempt": 1,
+                "attempt_history": [
+                    {"attempt": 1, "source": trigger_source, "principal": triggered_by,
+                     "at": datetime.now(timezone.utc).isoformat()}
+                ],
                 "heartbeat_at": firestore.SERVER_TIMESTAMP,
                 "started_at": firestore.SERVER_TIMESTAMP,
                 "stage_status": {},
@@ -75,15 +84,26 @@ def claim_run(run_id: str, trigger_source: str, triggered_by: str) -> dict[str, 
         )
         if data.get("status") == "running" and fresh:
             return {"claimed": False, "noop": "in_progress"}
+        next_attempt = int(data.get("attempt", 1)) + 1
         ref.update(
             {
                 "status": "running",
+                "error": firestore.DELETE_FIELD,  # clear stale terminal state
                 "attempt": firestore.Increment(1),
+                # initial trigger_source/triggered_by stay UNTOUCHED;
+                # the resume records its own provenance:
+                "current_trigger_source": trigger_source,
+                "current_triggered_by": triggered_by,
+                "current_attempt_started_at": firestore.SERVER_TIMESTAMP,
+                "attempt_history": firestore.ArrayUnion(
+                    [{"attempt": next_attempt, "source": trigger_source,
+                      "principal": triggered_by,
+                      "at": datetime.now(timezone.utc).isoformat()}]
+                ),
                 "heartbeat_at": firestore.SERVER_TIMESTAMP,
-                "resume_trigger_source": trigger_source,
             }
         )
-        return {"claimed": True, "attempt": int(data.get("attempt", 1)) + 1, "resumed": True}
+        return {"claimed": True, "attempt": next_attempt, "resumed": True}
 
 
 def load_checkpoints(run_id: str) -> dict[str, dict[str, Any]]:

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AB%80%3C/text%3E%3C/svg%3E">
 <title>hearthbeat · Hackathon Command Center</title>
 <style>
 :root{--bg:#12141a;--card:#1c1f27;--line:#2a2e39;--fg:#e8e6e0;--mut:#8b8fa3;--gold:#f0c674;--grn:#7ee08a;--red:#e07e7e;--blu:#7eb8e0}
@@ -99,7 +100,7 @@ li{margin:.15rem 0}
     <tr><th>Phase</th><th>Window</th></tr>
     <tr><td>Submission period</td><td>"August 3, 2026 (09:00 A.M. Pacific Time) – August 31, 2026 (5:00 P.M. Pacific Time)"</td></tr>
     <tr><td>Judging period</td><td>"September 1, 2026 (9:00 A.M. Pacific Time) – October 1, 2026 (11:45 P.M. Pacific Time)"</td></tr>
-    <tr><td>Winners announced</td><td>On or around <b>October 8, 2026</b>, 10:00 A.M. PT <span class="badge clar">VERIFY</span> <span class="mut">(from a summarizing fetch, not raw-quoted — glance at /rules before relying on the time)</span></td></tr>
+    <tr><td>Winners announced</td><td>On or around <b>October 8, 2026</b>, 10:00 A.M. PT (as stated on /rules)</td></tr>
     </table>
   </div>
 </details>
@@ -147,7 +148,7 @@ li{margin:.15rem 0}
     <tr><td>The Collaborative Partner</td><td>$20,000 + $2,000 credits</td><td>1</td></tr>
     <tr><td>The Fortified Enterprise Fleet</td><td>$20,000 + $2,000 credits</td><td>1</td></tr>
     <tr><td>Startup Excellence <span class="mut">(incorporated org + corporate email; opt-in)</span></td><td>$20,000 + $5,000 credits</td><td>1</td></tr>
-    <tr><td>Individual / Hobbyist</td><td>$10,000 + $1,000 credits <span class="badge clar">VERIFY</span> <span class="mut">amount from summarizing fetch only; row truncated in raw excerpt (qty confirmed)</span></td><td>2</td></tr>
+    <tr><td>Individual / Hobbyist</td><td>$10,000 + $1,000 credits</td><td>2</td></tr>
     <tr><td>Best Architectural Design <span class="mut">("top scoring projects in that judging criteria")</span></td><td>$5,000 + $1,000 credits</td><td>2</td></tr>
     <tr><td>Best Multimodal UX</td><td>$5,000 + $1,000 credits</td><td>2</td></tr>
     <tr><td>Honorable Mentions</td><td>$2,000 + $500 credits</td><td>5</td></tr>
@@ -157,12 +158,24 @@ li{margin:.15rem 0}
 </details>
 
 <details class="rg" open>
+  <summary>Multiple submissions &amp; one-prize rule <span class="badge rule">BINDING RULE</span>
+    <a class="cite" href="https://allthingsagentichackathon.devpost.com/rules">rules ↗</a></summary>
+  <div class="body">
+    <ul>
+      <li><b>Multiple submissions allowed:</b> an entrant may enter more than one Project, but each Submission must be "unique and substantially different" from the others.</li>
+      <li><b>One prize per Submission:</b> each Submission can win a maximum of one prize.</li>
+      <li><span class="badge strat">OUR STRATEGY</span> Finish hearthbeat first. Any later companion project must have a distinct problem, workflow, data, and evidence — built in a separate repo, not a reskin of hearthbeat. Any reused scaffolding gets disclosed.</li>
+    </ul>
+  </div>
+</details>
+
+<details class="rg" open>
   <summary>Required submission artifacts <span class="badge rule">BINDING RULE</span>
     <a class="cite" href="https://allthingsagentichackathon.devpost.com/rules">rules ↗</a>
     <a class="cite" href="https://allthingsagentichackathon.devpost.com/updates/45853-one-week-to-go-run-this-checklist-before-you-submit">checklist ↗</a></summary>
   <div class="body">
     <ul>
-      <li><b>Hosted project URL:</b> "URL to the hosted Project (if available)… A hosted project is highly encouraged." <span class="badge clar">ORGANIZER CLARIFICATION / VERIFY</span> <b>"if available" — highly encouraged, NOT mandatory.</b> <span class="badge strat">OUR STRATEGY</span> we ship one anyway (Mission Control, loads logged-out).</li>
+      <li><b>Hosted project URL:</b> <span class="badge rule">BINDING RULE</span> the rule's own text: "URL to the hosted Project (if available)… A hosted project is highly encouraged." — "if available" / "highly encouraged" is the rule's own language, so a hosted URL is encouraged, not mandatory. <span class="badge strat">OUR STRATEGY</span> we ship one anyway (Mission Control, loads logged-out).</li>
       <li><b>Text description:</b> "summary of the Project's features and functionality, technologies used, information about any other data sources used, and your findings and learnings" — data sources AND findings/learnings are named, don't skip them.</li>
       <li><b>Code repository:</b> "URL to your private or public code repository (on Github, Gitlab or Bitbucket)" — public OR private both allowed (access rules below).</li>
       <li><b>Spin-up instructions:</b> "A step-by-step guide in your README.md explaining how to set up and run the project locally or deploy it to the cloud."</li>
@@ -215,10 +228,10 @@ li{margin:.15rem 0}
     <table>
     <tr><th>Criterion</th><th>Weight</th><th>Focus</th></tr>
     <tr><td>Innovation &amp; Operational Utility</td><td>40%</td><td>"Does the system eliminate real-world friction? Is the 'Twist' present?" — high-value, autonomous execution over simple chat queries</td></tr>
-    <tr><td>Architectural Discipline &amp; Tech Stack</td><td>30% <span class="badge clar">VERIFY</span></td><td>system decoupling, state management, robust failure-tolerant design</td></tr>
-    <tr><td>Demo &amp; Production Readiness</td><td>30% <span class="badge clar">VERIFY</span></td><td>technical documentation, proof of execution in video, repo clarity</td></tr>
+    <tr><td>Architectural Discipline &amp; Tech Stack</td><td>30%</td><td>system decoupling, state management, robust failure-tolerant design</td></tr>
+    <tr><td>Demo &amp; Production Readiness</td><td>30%</td><td>technical documentation, proof of execution in video, repo clarity</td></tr>
     </table>
-    <p class="mut">Only the 40% appeared verbatim in the raw excerpt; the two 30% weights came from the summarizing fetch — verify on /rules. Per-track sub-guidance exists (modularity/state/tool isolation; schema + embedding + context-window strategy; separation of concerns + failure-tolerant routing + recovery from looping workers).</p>
+    <p class="mut">Per-track sub-guidance exists (modularity/state/tool isolation; schema + embedding + context-window strategy; separation of concerns + failure-tolerant routing + recovery from looping workers).</p>
     <p><b>Stage Three (bonus points):</b></p>
     <ul>
       <li><b>+0.2 max</b> — publish a public (not unlisted) blog/podcast/video content piece; it must state it was created "for the purposes of entering this hackathon".</li>
@@ -266,7 +279,8 @@ li{margin:.15rem 0}
     <ul>
       <li><b>Disqualification causes:</b> undermining the contest "by cheating, deception, or other unfair playing practices"; annoying/abusing/threatening/harassing entrants, Google, or the Judges; false registration info; tampering with the submission process; attempting to damage the contest website; eligibility failure; failing to return required documents in the specified timeframe.</li>
       <li><b>Availability through judging:</b> the Project stays available "free of charge and without any restriction" to Sponsor/Administrator/Judges until the Judging Period ends (Oct 1, 11:45 PM PT).</li>
-      <li><b>TWO-DAY winner window:</b> "If a potential winner does not respond to the notification attempt within two days from the first notification attempt, then such potential winner will be disqualified and an alternate potential winner will be selected." Required documents also due "within two days following attempted notification" or the prize is forfeited.</li>
+      <li><b>TWO-DAY winner window:</b> "If a potential winner does not respond to the notification attempt within two days from the first notification attempt, then such potential winner will be disqualified and an alternate potential winner will be selected."</li>
+      <li><b>Required Forms — also two days:</b> beyond the response window, the rules make the Required Forms due "within two days following attempted notification," or the prize is forfeited. <span class="mut">Operational note: respond same-day and track the exact deadline stamp from the first notification attempt.</span></li>
       <li>Awards are subject to verification of identity, qualifications, and role in creating the Submission — nobody is a winner until affidavits complete, "even if prospective winners have been announced."</li>
     </ul>
   </div>
@@ -293,7 +307,7 @@ li{margin:.15rem 0}
 </div>
 <div class="card" id="steps">
   <label><input type="checkbox" data-k="s1"> <span><b>1 · Artifacts final:</b> video uploaded PUBLIC w/ captions ≤4:00 (on-screen Google Cloud proof + speed note if sped) · repo public after scans OR two-account access granted · hosted Mission Control loads logged-out · diagram in repo · EVIDENCE.md filled.</span></label>
-  <label><input type="checkbox" data-k="s2"> <span><b>2 · Form recon:</b> open the form, re-verify the VERIFY-flagged items (Individual/Hobbyist amount, 30/30 weights, winners time), note char limits → annotate SUBMISSION.md.</span></label>
+  <label><input type="checkbox" data-k="s2"> <span><b>2 · Form recon:</b> open the form, confirm required questions and note char limits → annotate SUBMISSION.md.</span></label>
   <label><input type="checkbox" data-k="s3"> <span><b>3 · Fill &amp; save-draft per section:</b> paste from SUBMISSION.md; category = The Taskmaster only; answer the "which Google SDK + start date" question; disclose pre-existing/third-party code; include the scheduled-run permalink (?run=2026-08-31).</span></label>
   <label><input type="checkbox" data-k="s4"> <span><b>4 · Bonuses:</b> dev.to published (states made-for-hackathon) + #AllThingsAgenticHackathon post live → links into the form.</span></label>
   <label><input type="checkbox" data-k="s5"> <span><b>5 · Final sweep &amp; SUBMIT ≤12:30:</b> every link tested logged-out/incognito; confirmation screenshot saved; then FREEZE — no pushes.</span></label>
@@ -348,7 +362,7 @@ li{margin:.15rem 0}
 <table>
 <tr><th class="ok">SAFE (say it)</th><th>NARROWED (exact phrasing)</th><th class="warn">FORBIDDEN</th></tr>
 <tr>
-<td>"A real Cloud Scheduler cron fired this run — the badge is earned by the scheduler's service-account identity."</td>
+<td>"POST /run authenticates the configured invoker principal via OIDC; Scheduler run history and timing corroborate cron origin; resumed attempts record their own source and render as mixed provenance."</td>
 <td>"Authenticated as the dedicated Scheduler service account." (not "cryptographically impossible to fake")</td>
 <td>"Cannot ever be spoofed / universal cryptographic origin."</td>
 </tr>
@@ -522,10 +536,19 @@ li{margin:.15rem 0}
   }
   q.addEventListener("input", runSearch);
 
-  // ---- print: open every rule group, restore afterwards ----
-  var printSaved=null;
+  // ---- print: clear any active search filter, open every rule group,
+  // ---- then restore the filter AND the open/closed state afterwards.
+  // ---- (preSearchOpen is untouched, so clearing search later still
+  // ---- restores the exact pre-search state.) ----
+  var printSaved=null, printHadSearch=false;
   window.addEventListener("beforeprint", function(){
     printSaved = rgs.map(function(d){ return d.open; });
+    printHadSearch = q.value.trim()!=="";
+    if(printHadSearch){
+      rgs.forEach(function(d){ d.hidden=false; });
+      document.querySelectorAll("section table tr").forEach(function(tr){ tr.hidden=false; });
+      document.querySelectorAll("section").forEach(function(sec){ sec.hidden=false; });
+    }
     rgs.forEach(function(d){ d.open=true; });
   });
   window.addEventListener("afterprint", function(){
@@ -533,6 +556,7 @@ li{margin:.15rem 0}
       rgs.forEach(function(d,i){ d.open=printSaved[i]; });
       printSaved=null;
     }
+    if(printHadSearch){ printHadSearch=false; runSearch(); }
   });
 })();
 </script>

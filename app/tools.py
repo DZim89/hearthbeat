@@ -3,7 +3,8 @@
 Everything these tools return is ALREADY scrubbed: the house-side mirror
 (house/snapshot_mirror.py, house/email_ingest.py) applies the deterministic
 token map (and, for free text, the local Gemma pass) before anything is
-written to Firestore. The cloud pipeline never sees a real name.
+written to Firestore. Known family aliases are tokenized house-side on the
+intended runtime path; the cloud pipeline receives token-space data.
 """
 
 from __future__ import annotations

@@ -9,9 +9,10 @@ gatherers → Gemini 3.5 planner → a LoopAgent policy critic that argues with
 the plan) on Cloud Run. My phone gets a permission slip before it messages a
 human. The house PULLS its actions — the cloud can't reach in.
 
-The part I'm proudest of: real names never leave the house. Deterministic
-token map + local Gemma 3, and a salted-hash egress guard in the cloud that
-once refused to call Gemini because I misconfigured a mirror. BigQuery shows
+The part I'm proudest of: known family names are tokenized before anything
+leaves the house — deterministic map + local Gemma 3, plus a salted-hash
+egress guard in the cloud that once refused to call Gemini because I
+misconfigured a mirror. BigQuery shows
 zero protected-alias matches in the filmed run — a query, not a promise.
 
 One command for the whole demo from a clean clone:

@@ -1,5 +1,6 @@
 """Structured-output schemas for the pipeline. All person/room references are in
-token space ([[P_DAD]], [[P_KID1]]…) — the cloud never sees real names."""
+token space ([[P_DAD]], [[P_KID1]]…) — known family aliases are tokenized
+house-side before anything reaches this pipeline."""
 
 from __future__ import annotations
 

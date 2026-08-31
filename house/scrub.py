@@ -11,9 +11,9 @@ machine and is gitignored. The repo ships a fixture map with invented names
 (fixtures/token_map.fixture.json) so judge mode exercises identical code.
 
 Rehydration (token -> real value) happens exclusively inside the house, in
-house/action_poller.py. The cloud never holds the map — it holds only salted
-hashes of the aliases (see salted_alias_hashes) so it can *prove* nothing
-leaked without being able to reverse anything.
+house/action_poller.py. The map itself is never uploaded — the cloud holds
+only salted hashes of the aliases (see salted_alias_hashes) so it can DETECT
+a configured-alias leak without being able to reverse anything.
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ class ScrubLeakError(RuntimeError):
 class MapEntry:
     token: str                      # e.g. "[[P_KID1]]"
     kind: str                       # person | room | place | other
-    aliases: list[str]              # names/spellings that must never leave the house
+    aliases: list[str]              # names/spellings to tokenize before egress
     entity_ids: dict[str, str] = field(default_factory=dict)  # real HA id -> pseudonym id
 
 

@@ -104,6 +104,76 @@ async def test_retry_after_failure_reuses_checkpoints_no_duplicate_actions():
 
 
 @pytest.mark.asyncio
+async def test_scheduled_then_manual_resume_records_mixed_provenance(monkeypatch):
+    """A stale scheduled attempt taken over via manual resume keeps its
+    immutable initial provenance and records the resume separately."""
+    from app import runcontrol
+    from app.stores import db
+
+    rid = "judge-prov"
+    first = runcontrol.claim_run(rid, "scheduled", "sa-home@example.iam")
+    assert first["claimed"]
+    monkeypatch.setattr(runcontrol, "HEARTBEAT_STALE_SECONDS", 0)
+    import time as _t
+    _t.sleep(1.5)  # let the heartbeat age past the (zeroed) staleness window
+    second = runcontrol.claim_run(rid, "manual", "operator-token")
+    assert second["claimed"] and second["attempt"] == 2 and second.get("resumed")
+
+    doc = db().collection("runs").document(rid).get().to_dict() or {}
+    assert doc["trigger_source"] == "scheduled"          # immutable initial
+    assert doc["triggered_by"] == "sa-home@example.iam"  # immutable principal
+    assert doc["current_trigger_source"] == "manual"
+    assert doc["current_triggered_by"] == "operator-token"
+    assert doc["attempt"] == 2
+    assert [a["source"] for a in doc["attempt_history"]] == ["scheduled", "manual"]
+    assert "error" not in doc                             # stale error cleared
+
+    from app.server import _provenance_badge
+    label, cls, _ = _provenance_badge(doc)
+    assert "scheduled initial" in label and "manual resume" in label and cls == "manual"
+
+
+@pytest.mark.asyncio
+async def test_sensitive_action_slip_repaired_on_retry():
+    """Fault injection: action doc exists (awaiting_approval, sensitive) but
+    its slip is missing — a dispatch retry ensures exactly one slip and no
+    duplicate action; a further retry stays exactly one/one."""
+    from types import SimpleNamespace
+
+    from app.dispatcher import Dispatcher, _action_id
+    from app.stores import ACTIONS, SLIPS, db
+    from google.cloud import firestore
+
+    rid = "judge-slipfix"
+    action = {
+        "action_type": "notify_family_member", "entity": "[[P_GRANDMA]]",
+        "when": "12:00", "why": "test", "sensitive": True, "message": "hello",
+    }
+    aid = _action_id(rid, action)
+    db().collection(ACTIONS).document(aid).create({
+        "run_id": rid, "action": action, "ha_domain": "notify", "ha_service": "send",
+        "status": "awaiting_approval", "sensitive": True,
+        "created_at": firestore.SERVER_TIMESTAMP, "attempts": 0,
+    })
+    assert not db().collection(SLIPS).document(aid).get().exists  # injected fault
+
+    async def _dispatch_once():
+        ctx = SimpleNamespace(session=SimpleNamespace(state={
+            "run_id": rid,
+            "day_plan": {"summary": "s", "briefing_md": "b", "actions": [action]},
+        }))
+        async for _ in Dispatcher(name="hearth_dispatcher")._run_async_impl(ctx):
+            pass
+
+    for _ in range(2):  # repair retry, then idempotency retry
+        await _dispatch_once()
+        acts = list(db().collection(ACTIONS).where("run_id", "==", rid).get())
+        slips = list(db().collection(SLIPS).where("run_id", "==", rid).get())
+        assert [d.id for d in acts] == [aid]
+        assert [d.id for d in slips] == [aid]
+
+
+@pytest.mark.asyncio
 async def test_invalid_preclaim_config_creates_no_run_doc(monkeypatch):
     """Config validation happens BEFORE the claim: a busted production config
     must not strand a status=running date-keyed doc."""

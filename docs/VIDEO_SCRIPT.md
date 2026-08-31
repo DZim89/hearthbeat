@@ -21,9 +21,10 @@ Continuous screen/camera capture, no cuts:
    at fire time) and the morning briefing lands on the phone.
 
 VO over the core: "This is a real Cloud Scheduler cron firing, on camera, in
-one take. The run is authenticated as the scheduler's own service account —
-the manual demo endpoint is labeled `manual` and can't produce this badge.
-Watch the pipeline argue with itself, dispatch, and the house quietly act."
+one take. The run authenticates the scheduler's own service-account
+principal, Scheduler's run history corroborates the cron origin, and any
+manual run — or manual resume — carries its own label. Watch the pipeline
+argue with itself, dispatch, and the house quietly act."
 
 ## Labeled pickups (each badged "PICKUP · run 2026-08-31" unless noted)
 
@@ -33,7 +34,7 @@ Watch the pipeline argue with itself, dispatch, and the house quietly act."
 | P2 | Architecture | Diagram sweep: gatherers → planner → policy loop → dispatcher; house/cloud wall, pull arrow | ADK primitives named; "the cloud never reaches in — the house pulls." |
 | P3 | Permission slip + calendar continuation | Phone close-up: Approve/Deny → tap Approve → HA calendar shows the **proposed** `[hearthbeat]` event; notification shows the **approved draft released to the household channel** | "Anything touching a person waits for a human signature. One tap: the proposed fix lands on the calendar and the approved draft is released to the family's notification channel — it never messages Grandma directly." |
 | P4 | Red team | `/trigger?red_team=1` (labeled manual) → denial rows: `unlisted_action_type:front_door_unlock` on Mission Control + BQ `denials_v` | "Planted forbidden action, refused in writing. Denials are data." |
-| P5 | Gemma / privacy | `ollama ps`; raw email → tokenized side-by-side; BQ: zero protected-alias matches for the filmed run; the historical `egress_block` rows shown separately and explained | "Deterministic token map → local Gemma → map again, then a salted-hash guard in the cloud. Zero protected-alias matches in this run — and the only rows the violations table has ever held are the guard catching OUR OWN build mistake. We left the evidence in." |
+| P5 | Gemma / privacy | `ollama ps`; raw email → tokenized side-by-side; BQ: zero protected-alias matches for the filmed run; the historical `egress_block` rows shown separately and explained | "Known family names are deterministically tokenized before anything leaves the house, a local Gemma tier scans for PII we can't list, and every instrumented outbound request is checked against the protected-alias hash set. This run: zero matches — and the only rows that table has ever held are the guard catching OUR OWN build mistakes. We left the evidence in." |
 | P6 | Console proof + judge mode (judge-mode run id shown) | Cloud Run service (sa-home), Scheduler SUCCESS history; `git clone` → `SIMULATED_HOME=1 docker compose up` → localhost Mission Control | "Live on Cloud Run, priced per run in BigQuery — and judges get the whole house with one command from a clean clone." |
 | P7 | Close | Thumbnail card → URLs | "hearthbeat. The house that runs its own morning." |
 

@@ -7,7 +7,7 @@ it matters, and the house **pulls** its actions — the cloud has no path in.
 
 ```mermaid
 flowchart LR
-    subgraph HOUSE["🏠 THE HOUSE (trusted — real names live ONLY here)"]
+    subgraph HOUSE["🏠 THE HOUSE (known aliases tokenized here)"]
         HA[Home Assistant]
         MIRROR[snapshot mirror<br/>every 15 min]
         INGEST[school-email ingest<br/>watched folder]
@@ -22,7 +22,7 @@ flowchart LR
         PHONE -->|input_text bridge| POLLER
     end
 
-    subgraph GCP["☁️ GOOGLE CLOUD (sees tokens, never names)"]
+    subgraph GCP["☁️ GOOGLE CLOUD (receives token-space data)"]
         SCHED[Cloud Scheduler<br/>6:45 AM cron · OIDC]
         subgraph RUN["Cloud Run · sa-home"]
             direction TB
@@ -67,13 +67,13 @@ poller before anything touches Home Assistant. A planted forbidden action
 (`front_door_unlock`) is refused at layer (a) and lands as a denial row in
 BigQuery — we film that.
 
-**3. The cloud never learns a name.** House-side, a deterministic token map is
-applied before AND after a local Gemma pass (`deep_scrub`): the map catches the
-family (the thing it knows), Gemma catches strangers' PII the map cannot know
-(a teacher's name in a school email), and `assert_clean` hard-fails if either
-missed. Cloud-side, the LedgerPlugin's `before_model_callback` scans every
-outbound model request against **salted hashes** of the protected names — the
-cloud can prove nothing leaked without ever holding plaintext. BigQuery view
+**3. Privacy by layered scrubbing.** Known family aliases are deterministically
+tokenized on the intended runtime path — the map is applied before AND after a
+local Gemma pass (`deep_scrub`, direct local HTTP, fail-closed parsing): the
+map handles what it knows, Gemma scans for additional PII (a teacher's name in
+a school email), and `assert_clean` hard-fails if either missed. Cloud-side,
+every instrumented outbound Gemini request is checked against the **configured
+protected-alias hash set** — a match blocks the call. BigQuery view
 `egress_violations_v` shows zero protected-alias matches for the filmed run
 (its only historical rows are the guard blocking our own build mistakes —
 kept deliberately).

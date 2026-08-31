@@ -46,7 +46,7 @@ Then open **http://localhost:8080/missioncontrol** and watch a full run:
 The hosted, live-against-the-real-house instance is here:
 **https://hearthbeat-369944070051.us-central1.run.app/missioncontrol**
 *(read-only; it shows whatever this morning's real run did — in token space:
-the runtime privacy path keeps real names inside the house).*
+known family aliases are tokenized before anything leaves the house).*
 
 ---
 
@@ -143,9 +143,10 @@ lifts quiet-hours for that action, because a tap is consent.
   `gemini-3.5-flash-lite` (gatherers) via **Vertex AI**, `location=global`.
 - **Google ADK** — `SequentialAgent`, `ParallelAgent`, `LoopAgent`, custom
   `BaseAgent`s (PolicyGate/Dispatcher), `output_schema` structured outputs,
-  a `BasePlugin` for lifecycle observability, `LiteLlm` for the house-side
-  Gemma agent (also exported as an `AgentTool` factory — the enforcement path
-  invokes Gemma directly and deterministically).
+  a `BasePlugin` for lifecycle observability. (House-side privacy enforcement
+  is direct local Ollama/Qwen HTTP with recorded `privacy_tier` evidence; an
+  optional ADK `LiteLlm`/`AgentTool` factory exists in code but is not the
+  enforcement path.)
 - **Google Cloud** — Cloud Run (service, runs as `sa-home`), Cloud Scheduler
   (OIDC-authenticated cron), Pub/Sub (+ DLQ, native BigQuery subscription),
   Firestore (runs/checkpoints/actions/slips + the house mirror), BigQuery
@@ -224,6 +225,6 @@ docs/       architecture, demo runbook, the HA automation
 
 Each run's cost is a **run-scoped list-rate estimate** computed from the
 configured official per-token rates (`config/prices.yaml`) and recorded in
-BigQuery (`runs_v.cost_cents`) and on Mission Control. A configured spend
-ceiling is enforced mid-run against observed spend — the policy engine
-refuses the plan rather than exceed it.
+BigQuery (`runs_v.cost_cents`) and on Mission Control. A configured
+observed-spend threshold causes the policy layer and dispatcher to deny the
+action plan; it is not a hard billing cap.

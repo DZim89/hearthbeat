@@ -26,7 +26,7 @@ def _env(base: dict | None = None, **kw) -> dict:
 
 def test_production_all_missing_fails():
     errs = ledger.validate_egress_config(_env(K_SERVICE="svc"))
-    assert errs and "all three required in production" in errs[0]
+    assert errs and "all three required" in errs[0]
 
 
 @pytest.mark.parametrize("missing", ["EGRESS_SALT", "EGRESS_ALIAS_HASHES", "EGRESS_KNOWN_TOKENS"])
@@ -62,7 +62,7 @@ def test_csv_whitespace_stripped():
     assert ledger.validate_egress_config(env) == []
 
 
-def test_fixture_judge_mode_may_run_guardless():
+def test_offline_fixture_replay_may_run_guardless():
     assert ledger.validate_egress_config(_env(SIMULATED_HOME="1")) == []
 
 
@@ -71,13 +71,19 @@ def test_fixture_judge_supplied_but_malformed_still_fails():
     assert ledger.validate_egress_config(env) != []
 
 
-def test_judge_live_requires_guard():
+def test_local_judge_live_requires_guard():
     errs = ledger.validate_egress_config(_env(SIMULATED_HOME="1", JUDGE_LLM="live"))
     assert errs  # real requests leave the machine — no silent guardless mode
 
 
-def test_local_dev_may_run_guardless():
-    assert ledger.validate_egress_config(_env()) == []
+def test_cloud_run_simulated_still_requires_guard():
+    errs = ledger.validate_egress_config(_env(K_SERVICE="svc", SIMULATED_HOME="1"))
+    assert errs  # K_SERVICE means real infra — SIMULATED_HOME grants no exemption
+
+
+def test_bare_local_dev_requires_guard():
+    errs = ledger.validate_egress_config(_env())
+    assert errs  # bare local dev can reach real Vertex — guard config required
 
 
 def test_plugin_constructor_fails_closed(monkeypatch):

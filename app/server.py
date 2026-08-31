@@ -2,8 +2,8 @@
 
   POST /run            — Cloud Scheduler ONLY (OIDC verified in-app). The single
                          code path that may label a run trigger_source=scheduled.
-  POST /trigger        — manual/filming/judge entrypoint; permanently labeled
-                         manual. A manual run structurally cannot pose as scheduled.
+  POST /trigger        — manual/filming/judge entrypoint; labeled manual, and a
+                         manual RESUME of a scheduled run renders as mixed provenance.
   GET  /missioncontrol — public read-only dashboard (token-space data only).
   GET  /slip/{id}      — console approval standby path (token-gated).
   GET  /health
@@ -140,13 +140,31 @@ pre{background:#1c1f27;border:1px solid #2a2e39;border-radius:8px;padding:1rem;w
 """
 
 
-def _within_run_window(doc: dict, started_at, ended_at, *, skew_s: int = 120) -> bool:
+def _provenance_badge(data: dict) -> tuple[str, str, str]:
+    """(badge_label, badge_css_class, by_line). A run only renders the green
+    scheduled badge when BOTH its immutable initial source AND its current
+    attempt are scheduled — a manually resumed scheduled run renders as mixed
+    provenance, never as scheduled-only."""
+    initial = str(data.get("trigger_source", "—"))
+    current = str(data.get("current_trigger_source") or initial)
+    by_initial = str(data.get("triggered_by", "—"))
+    by_current = str(data.get("current_triggered_by") or by_initial)
+    if current != initial:
+        label = f"{initial} initial → {current} resume (attempt {data.get('attempt', '?')})"
+        return label, "manual", f"{by_initial} → {by_current}"
+    cls = "scheduled" if current == "scheduled" else "manual"
+    return current, cls, by_initial
+
+
+def _within_run_window(doc: dict, started_at, ended_at, *, skew_s: int = 10) -> bool:
     """Belt on top of the exact run_id equality filter: a displayed row must
-    also have been created inside the run's own time window (start ... end,
-    or now while running). Missing timestamps fall back to the id filter."""
+    have been created inside the run's own server-timestamp window (start ...
+    end, or now while running). FAIL CLOSED: a row with no created_at, or a
+    run with no started_at, shows nothing. The only tolerance is a disclosed
+    ±10s clock-skew allowance (all timestamps are Firestore server time)."""
     ts = doc.get("created_at")
     if ts is None or started_at is None:
-        return True
+        return False
     end = ended_at or datetime.now(timezone.utc)
     skew = timedelta(seconds=skew_s)
     return (started_at - skew) <= ts <= (end + skew)
@@ -159,26 +177,33 @@ async def missioncontrol(run: str | None = Query(default=None)) -> str:
     data = (snap.to_dict() or {}) if snap.exists else {}
     started_at = data.get("started_at")
     finished_at = data.get("finished_at")
-    actions = [
-        a
-        for a in (
-            {"id": d.id, **(d.to_dict() or {})}
-            for d in db().collection(ACTIONS).where("run_id", "==", run_id).get()
-        )
-        if _within_run_window(a, started_at, finished_at)
-    ]
-    slips = [
-        s
-        for s in (
-            {"id": d.id, **(d.to_dict() or {})}
-            for d in db().collection(SLIPS).where("run_id", "==", run_id).get()
-        )
-        if _within_run_window(s, started_at, finished_at)
-    ]
+    evidence_note = ""
+    if data and started_at is None:
+        # Fail closed: without a run start timestamp no action/slip evidence
+        # can be window-verified — show none and say so.
+        actions, slips = [], []
+        evidence_note = "evidence incomplete — run has no start timestamp; action/slip rows withheld"
+    else:
+        actions = [
+            a
+            for a in (
+                {"id": d.id, **(d.to_dict() or {})}
+                for d in db().collection(ACTIONS).where("run_id", "==", run_id).get()
+            )
+            if _within_run_window(a, started_at, finished_at)
+        ]
+        slips = [
+            s
+            for s in (
+                {"id": d.id, **(d.to_dict() or {})}
+                for d in db().collection(SLIPS).where("run_id", "==", run_id).get()
+            )
+            if _within_run_window(s, started_at, finished_at)
+        ]
 
     e = html.escape
-    trig = e(str(data.get("trigger_source", "—")))
-    badge_cls = "scheduled" if trig == "scheduled" else "manual"
+    badge_label, badge_cls, by_line = _provenance_badge(data)
+    trig = e(badge_label)
     stages = "".join(
         f'<span class="stage {"done" if (data.get("stage_status") or {}).get(s) == "done" else ""}">{s}</span>'
         for s in runcontrol.STAGE_ORDER
@@ -211,13 +236,14 @@ async def missioncontrol(run: str | None = Query(default=None)) -> str:
 <h1>hearthbeat <span class=muted>/ mission control</span></h1>
 <p class=kv>run <b>{e(run_id)}</b> · status <b>{e(str(data.get('status', 'no run yet')))}</b>
 · trigger <span class="badge {badge_cls}">{trig}</span>
-· by {e(str(data.get('triggered_by', '—')))}
+· by {e(by_line)}
 · attempt {e(str(data.get('attempt', '—')))}
 · window {e(str(started_at)[:19])} → {e(str(finished_at)[:19]) if finished_at else 'running'}
 · read-only, auto-refreshes</p>
+{f'<p class="kv deny">{e(evidence_note)}</p>' if evidence_note else ''}
 <h2>Pipeline</h2><p>{stages}</p>
 <h2>Day summary</h2><pre>{e(str(data.get('summary', '— pipeline has not planned yet —')))}</pre>
-<h2>Morning briefing (token space — real names never reach this page)</h2>
+<h2>Morning briefing (token space — known family aliases are tokenized house-side)</h2>
 <pre>{e(str(data.get('briefing_md', '—')))}</pre>
 <h2>Actions</h2><table><tr><th>action</th><th>entity</th><th>status</th><th>needs human</th><th>why</th></tr>{action_rows}</table>
 <h2>Permission slips</h2><table><tr><th>action</th><th>target</th><th>status</th><th>message</th></tr>{slip_rows}</table>

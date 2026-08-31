@@ -112,8 +112,9 @@ class Dispatcher(BaseAgent):
             try:
                 db().collection(ACTIONS).document(aid).create(doc)
             except gexc.AlreadyExists:
-                dispatched.append(aid)  # resume: already written, never duplicated
-                continue
+                pass  # resume path: the action doc survives — fall through so
+                      # the slip is STILL ensured (a crash between the two
+                      # creates must not strand a sensitive action slip-less)
             if sensitive:
                 try:
                     db().collection(SLIPS).document(aid).create(

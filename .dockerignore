@@ -1,0 +1,7 @@
+
+# hearthbeat: never in any build/source context
+*.docx
+config/token_map.local.json
+house/.env
+data/
+.pytest_cache/

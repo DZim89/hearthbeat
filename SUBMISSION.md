@@ -55,14 +55,14 @@ stage-checkpointed, and resumable: under the retry paths we tested (kill
 mid-run, re-fire), it finishes without duplicating a single action.
 
 **Built with.** Google ADK (SequentialAgent / ParallelAgent / LoopAgent /
-custom BaseAgents / BasePlugin / structured outputs / LiteLlm+AgentTool),
+custom BaseAgents / BasePlugin / structured outputs),
 Gemini 3.5 Flash + Flash-Lite on Vertex AI (location=global), Cloud Run,
 Cloud Scheduler (OIDC), Pub/Sub + DLQ with a native BigQuery subscription,
 Firestore, BigQuery, and local Gemma 3 as a load-bearing privacy tier.
 Each run's cost is a run-scoped list-rate estimate from the configured
 official per-token rates, recorded in BigQuery (`runs_v.cost_cents`) and on
-Mission Control; a configured spend ceiling is enforced mid-run against
-observed spend.
+Mission Control; a configured observed-spend threshold causes the policy
+layer and dispatcher to deny the action plan (not a hard billing cap).
 
 ## Built with (tags)
 google-adk, gemini, vertex-ai, cloud-run, cloud-scheduler, pub-sub, firestore,

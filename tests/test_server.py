@@ -1,5 +1,8 @@
-"""Mission Control run-window belt filter (the exact-run_id equality filter is
-in the Firestore queries themselves — app/server.py missioncontrol())."""
+"""Mission Control run-window belt filter — FAIL-CLOSED semantics: the exact
+run_id equality filter lives in the Firestore queries (app/server.py
+missioncontrol()); this belt additionally requires every displayed row to sit
+inside the run's own server-timestamp window, with only a disclosed ±10s
+clock-skew tolerance. Missing timestamps show nothing."""
 
 from datetime import datetime, timedelta, timezone
 
@@ -18,23 +21,56 @@ def test_row_inside_window_shown():
 
 
 def test_row_before_window_hidden():
-    assert not _within_run_window(_doc(-500), T0, T_END)
+    assert not _within_run_window(_doc(-11), T0, T_END)
 
 
 def test_row_after_window_hidden():
-    assert not _within_run_window(_doc(500), T0, T_END)
+    assert not _within_run_window(_doc(180 + 11), T0, T_END)
 
 
-def test_skew_tolerance():
-    assert _within_run_window(_doc(-60), T0, T_END)          # within 120s skew
-    assert _within_run_window(_doc(180 + 60), T0, T_END)      # end + 60s
+def test_exact_boundaries_with_disclosed_skew():
+    assert _within_run_window(_doc(-10), T0, T_END)       # start - 10s: allowed
+    assert _within_run_window(_doc(180 + 10), T0, T_END)  # end + 10s: allowed
+    assert not _within_run_window(_doc(-10.5), T0, T_END)
+    assert not _within_run_window(_doc(190.5), T0, T_END)
 
 
 def test_running_run_uses_now_as_end():
-    recent = {"created_at": datetime.now(timezone.utc) - timedelta(seconds=10)}
-    assert _within_run_window(recent, datetime.now(timezone.utc) - timedelta(minutes=5), None)
+    now = datetime.now(timezone.utc)
+    assert _within_run_window({"created_at": now - timedelta(seconds=10)},
+                              now - timedelta(minutes=5), None)
+    assert not _within_run_window({"created_at": now - timedelta(minutes=10)},
+                                  now - timedelta(minutes=5), None)
 
 
-def test_missing_timestamps_fall_back_to_id_filter():
-    assert _within_run_window({}, T0, T_END)
-    assert _within_run_window(_doc(0), None, None)
+def test_missing_timestamps_fail_closed():
+    assert not _within_run_window({}, T0, T_END)          # row without created_at
+    assert not _within_run_window(_doc(0), None, None)    # run without started_at
+    assert not _within_run_window({}, None, None)
+
+
+# ---- provenance badge -------------------------------------------------------
+
+def test_pure_scheduled_run_renders_green():
+    from app.server import _provenance_badge
+    label, cls, by = _provenance_badge(
+        {"trigger_source": "scheduled", "triggered_by": "sa@x",
+         "current_trigger_source": "scheduled", "current_triggered_by": "sa@x"})
+    assert (label, cls, by) == ("scheduled", "scheduled", "sa@x")
+
+
+def test_manual_resume_renders_mixed_never_scheduled_only():
+    from app.server import _provenance_badge
+    label, cls, by = _provenance_badge(
+        {"trigger_source": "scheduled", "triggered_by": "sa@x", "attempt": 2,
+         "current_trigger_source": "manual", "current_triggered_by": "operator"})
+    assert "scheduled initial" in label and "manual resume" in label and "2" in label
+    assert cls == "manual"           # the green class is unreachable when mixed
+    assert by == "sa@x → operator"
+
+
+def test_manual_only_run_renders_manual():
+    from app.server import _provenance_badge
+    label, cls, _ = _provenance_badge(
+        {"trigger_source": "manual", "triggered_by": "op"})
+    assert (label, cls) == ("manual", "manual")

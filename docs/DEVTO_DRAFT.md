@@ -96,8 +96,8 @@ free emulator exists (BigQuery → JSONL), each disclosed.
 ## Numbers
 
 - Per-run cost: a run-scoped list-rate estimate at official configured
-  rates (`runs_v.cost_cents` in BigQuery); a configured spend ceiling is
-  enforced *mid-run* against observed spend.
+  rates (`runs_v.cost_cents` in BigQuery); a configured observed-spend
+  threshold makes the policy layer deny the plan (not a hard billing cap).
 - `egress_violations_v`: zero protected-alias matches in the filmed run
   (its only rows ever: the guard catching our own build misconfigurations).
 - Unit tests: the scrub round-trip and policy table tests are the graded core.
