@@ -68,9 +68,18 @@ def _claim(ref) -> bool:
 
 def _execute(doc_id: str, doc: dict, tmap: scrub.TokenMap) -> None:
     policy = load_policy(config.REPO_ROOT / "config" / "policy.yaml")
-    action_tok = doc.get("action") or {}
+    raw_action = doc.get("action")
+    action_tok = raw_action if isinstance(raw_action, dict) else {}
+    spec = policy.action_spec(str(action_tok.get("action_type", ""))) or {}
+    # Derive sensitivity from local policy as well as doc/action flags so a
+    # compromised cloud cannot skip permission-slip verification by clearing doc["sensitive"].
+    is_sensitive = (
+        bool(doc.get("sensitive"))
+        or bool(action_tok.get("sensitive"))
+        or (action_tok.get("entity") in spec.get("sensitive_targets", []))
+    )
     human_approved = False
-    if doc.get("sensitive"):
+    if is_sensitive:
         # The house trusts the PERMISSION SLIP, not a cloud-writable status
         # field: a sensitive action executes only if its slip was decided by a
         # known consent channel. (Threat model: compromised cloud must not be
@@ -97,7 +106,8 @@ def _execute(doc_id: str, doc: dict, tmap: scrub.TokenMap) -> None:
         return
 
     a = _rehydrate_action(action_tok, tmap)   # tokens -> real, ONLY here, in-house
-    domain, service = doc.get("ha_domain", ""), doc.get("ha_service", "")
+    domain = str(spec.get("ha_domain") or doc.get("ha_domain", ""))
+    service = str(spec.get("ha_service") or doc.get("ha_service", ""))
     atype = a.get("action_type")
 
     if atype == "media_pause":
